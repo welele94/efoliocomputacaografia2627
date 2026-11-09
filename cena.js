@@ -140,38 +140,43 @@ for(const [x,z] of [[-6,-2.6],[6,-2.6],[-6,3.35],[6,3.35]]){
 // Engrenagens: perfil poligonal com dentes externos, extrudido em altura.
 // O eixo de rotacao e Y (Three.js).
 function criarEngrenagem({x,z,raio,dentes,material,pontoMat,pontoAng=0,y=.20}) {
-  const g=new THREE.Group();
+  const g = new THREE.Group();
   g.position.set(x,y,z);
   scene.add(g);
 
-  const shape=new THREE.Shape();
-  const subdiv=4;
-  for(let i=0;i<dentes;i++){
-    const a=i*2*Math.PI/dentes;
-    const da=2*Math.PI/dentes;
-    const vertices=[
-      [a,raio],
-      [a+.19*da,raio+CONFIG.RAIO_DENTES],
-      [a+.68*da,raio+CONFIG.RAIO_DENTES],
-      [a+.86*da,raio]
-    ];
-    for(const [ang,r] of vertices){
-      const px=Math.cos(ang)*r, py=Math.sin(ang)*r;
-      if(i===0 && ang===0) shape.moveTo(px,py);
-      else shape.lineTo(px,py);
-    }
+  const altura = CONFIG.ALTURA_ENGRENAGEM;
+  const profundidadeDente = CONFIG.RAIO_DENTES * 1.5;
+  const passo = 2 * Math.PI / dentes;
+  const larguraDente = (2 * Math.PI * raio / dentes) * 0.55;
+
+  // Disco base ligeiramente recuado, para os dentes se destacarem.
+  mesh(new THREE.CylinderGeometry(
+    raio - profundidadeDente * 0.42,
+    raio - profundidadeDente * 0.42,
+    altura, 64
+  ), material, g);
+
+  // Cada caixa tem X radial e Z tangencial; rotacao Y = -a.
+  // A pequena sobreposicao evita falhas entre o disco e os dentes.
+  for (let i = 0; i < dentes; i++) {
+    const a = i * passo;
+    const dente = mesh(
+      new THREE.BoxGeometry(profundidadeDente, altura, larguraDente),
+      material, g
+    );
+    const distancia = raio - profundidadeDente * 0.05;
+    dente.position.set(
+      Math.cos(a) * distancia, 0, Math.sin(a) * distancia
+    );
+    dente.rotation.y = -a;
   }
-  shape.closePath();
-  const geom=new THREE.ExtrudeGeometry(shape,{
-    depth:CONFIG.ALTURA_ENGRENAGEM,bevelEnabled:false,curveSegments:2
-  });
-  geom.rotateX(-Math.PI/2);
-  const gear=mesh(geom,material,g);
-  // Colocamos a superficie superior acima do plano da plataforma.
-  gear.position.y=0;
+
   cilindro(.055,.26,MAT.preto,0,.12,0,g);
-  if(pontoMat) ponto(pontoMat,Math.cos(pontoAng)*raio*.72,
-                          Math.sin(pontoAng)*raio*.72,.245,g);
+  if (pontoMat) {
+    ponto(pontoMat,
+      Math.cos(pontoAng)*raio*.72,
+      Math.sin(pontoAng)*raio*.72,.245,g);
+  }
   return g;
 }
 
