@@ -186,7 +186,7 @@ const esquerda=criarEngrenagem({
   pontoMat:MAT.vermelho,pontoAng:-.1
 });
 const pequena=criarEngrenagem({
-  x:-1.95,z:-.55,raio:.80,dentes:12,material:MAT.prata,
+  x:-1.95,z:-.55,raio:.60,dentes:12,material:MAT.prata,
   pontoMat:MAT.azul,pontoAng:.0
 });
 const grande=criarEngrenagem({
