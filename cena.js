@@ -49,6 +49,9 @@ const CONFIG = {
   PERIODO_DOURADA_GRANDE_S: 8,      // HIPOTESE ate confirmar acoplamento
   RAIO_DENTES: 0.20,
   ALTURA_ENGRENAGEM: 0.40,
+  ESPESSURA_ESQUERDA: 0.80, // hipotese: esquerda ocupa os dois niveis
+  Y_ENGRENAGEM_INFERIOR: 0.20,
+  Y_ENGRENAGEM_SUPERIOR: 0.60,
   VELOCIDADE_CAMARA_RAD_S: 0.013,   // HIPOTESE; V1 quase estatica
   COR_FUNDO: 0x171b22
 };
@@ -139,12 +142,12 @@ for(const [x,z] of [[-6,-2.6],[6,-2.6],[-6,3.35],[6,3.35]]){
 
 // Engrenagens: perfil poligonal com dentes externos, extrudido em altura.
 // O eixo de rotacao e Y (Three.js).
-function criarEngrenagem({x,z,raio,dentes,material,pontoMat,pontoAng=0,y=.20}) {
+function criarEngrenagem({x,z,raio,dentes,material,pontoMat,pontoAng=0,y=.20,espessura=CONFIG.ALTURA_ENGRENAGEM}) {
   const g = new THREE.Group();
   g.position.set(x,y,z);
   scene.add(g);
 
-  const altura = CONFIG.ALTURA_ENGRENAGEM;
+  const altura = espessura;
   const profundidadeDente = CONFIG.RAIO_DENTES * 1.5;
   const passo = 2 * Math.PI / dentes;
   const larguraDente = (2 * Math.PI * raio / dentes) * 0.55;
@@ -171,11 +174,13 @@ function criarEngrenagem({x,z,raio,dentes,material,pontoMat,pontoAng=0,y=.20}) {
     dente.rotation.y = -a;
   }
 
-  cilindro(.055,.26,MAT.preto,0,.12,0,g);
+  // Eixo e marcador acompanham a face superior da engrenagem.
+  const topo = altura / 2;
+  cilindro(.055,.10,MAT.preto,0,topo+.05,0,g);
   if (pontoMat) {
     ponto(pontoMat,
       Math.cos(pontoAng)*raio*.72,
-      Math.sin(pontoAng)*raio*.72,.245,g);
+      Math.sin(pontoAng)*raio*.72,topo+.035,g);
   }
   return g;
 }
@@ -183,19 +188,23 @@ function criarEngrenagem({x,z,raio,dentes,material,pontoMat,pontoAng=0,y=.20}) {
 // Posicoes iniciais e dimensoes sao aproximacoes para primeira comparacao.
 const esquerda=criarEngrenagem({
   x:-3.45,z:-.48,raio:1.34,dentes:21,material:MAT.ouro,
+  y:CONFIG.Y_ENGRENAGEM_INFERIOR + CONFIG.ALTURA_ENGRENAGEM/2,
+  espessura:CONFIG.ESPESSURA_ESQUERDA,
   pontoMat:MAT.vermelho,pontoAng:-.1
 });
 const pequena=criarEngrenagem({
   x:-1.05,z:-1.10,raio:.95,dentes:12,material:MAT.prata,
+  y:CONFIG.Y_ENGRENAGEM_SUPERIOR,
   pontoMat:MAT.azul,pontoAng:.0
 });
 const grande=criarEngrenagem({
   x:.23,z:.02,raio:1.36,dentes:25,material:MAT.ouro,
+  y:CONFIG.Y_ENGRENAGEM_INFERIOR,
   pontoMat:null
 });
 const superior=criarEngrenagem({
   x:.23,z:.02,raio:.98,dentes:16,material:MAT.ouroClaro,
-  pontoMat:MAT.verde,pontoAng:0.14,y:.49
+  pontoMat:MAT.verde,pontoAng:0.14,y:CONFIG.Y_ENGRENAGEM_SUPERIOR
 });
 const direita=criarEngrenagem({
   x:3.3,z:1.0,raio:.98,dentes:16,material:MAT.cinza,
@@ -324,7 +333,8 @@ function atualizar(t) {
   esquerda.rotation.y=-2*Math.PI*t/CONFIG.PERIODO_ESQUERDA_S;
   pequena.rotation.y=+2*Math.PI*t/CONFIG.PERIODO_CINZENTA_PEQUENA_S;
   grande.rotation.y=-2*Math.PI*t/CONFIG.PERIODO_DOURADA_GRANDE_S;
-  superior.rotation.y=-2*Math.PI*t/CONFIG.PERIODO_DOURADA_SUPERIOR_S;
+  // As duas douradas direitas partilham eixo e angulo.
+  superior.rotation.y=grande.rotation.y;
   direita.rotation.y=+2*Math.PI*t/CONFIG.PERIODO_CINZENTA_DIREITA_S;
   disco.rotation.y=-anguloDisco(t);
   const a=angCamara+CONFIG.VELOCIDADE_CAMARA_RAD_S*t;
