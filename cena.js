@@ -48,8 +48,8 @@ const CONFIG = {
   PERIODO_CINZENTA_DIREITA_S: 5,
   PERIODO_DOURADA_GRANDE_S: 8,      // HIPOTESE ate confirmar acoplamento
   RAIO_DENTES: 0.20,
-  ALTURA_ENGRENAGEM: 0.40,
-  ESPESSURA_ESQUERDA: 0.80, // hipotese: esquerda ocupa os dois niveis
+  ALTURA_ENGRENAGEM: 0.20,
+  ESPESSURA_ESQUERDA: 0.25, // hipotese: esquerda ocupa os dois niveis
   Y_ENGRENAGEM_INFERIOR: 0.20,
   Y_ENGRENAGEM_SUPERIOR: 0.60,
   VELOCIDADE_CAMARA_RAD_S: 0.013,   // HIPOTESE; V1 quase estatica
@@ -193,28 +193,28 @@ const esquerda=criarEngrenagem({
   pontoMat:MAT.vermelho,pontoAng:-.1
 });
 const pequena=criarEngrenagem({
-  x:-1.05,z:-1.10,raio:.95,dentes:12,material:MAT.prata,
+  x:-1.0,z:-1.10,raio:1.05,dentes:12,material:MAT.prata,
   y:CONFIG.Y_ENGRENAGEM_SUPERIOR,
   pontoMat:MAT.azul,pontoAng:.0
 });
 const grande=criarEngrenagem({
-  x:.23,z:.02,raio:1.36,dentes:25,material:MAT.ouro,
+  x:.88,z:.02,raio:1.36,dentes:25,material:MAT.ouro,
   y:CONFIG.Y_ENGRENAGEM_INFERIOR,
   pontoMat:null
 });
 const superior=criarEngrenagem({
-  x:.23,z:.02,raio:.98,dentes:16,material:MAT.ouroClaro,
+  x:.88,z:.02,raio:.98,dentes:16,material:MAT.ouroClaro,
   pontoMat:MAT.verde,pontoAng:0.14,y:CONFIG.Y_ENGRENAGEM_SUPERIOR
 });
 const direita=criarEngrenagem({
-  x:3.3,z:1.0,raio:.98,dentes:16,material:MAT.cinza,
+  x:2.2,z:2.0,raio:.98,dentes:16,material:MAT.cinza,
   pontoMat:MAT.rosa,pontoAng:1.95
 });
 
 // Disco com quatro ranhuras, por enquanto representadas visualmente.
 // A geometria das ranhuras sera afinada pela imagem de referencia.
 const disco=new THREE.Group();
-disco.position.set(4.75,.20,-.50);
+disco.position.set(3.50,.40,2.50);
 scene.add(disco);
 cilindro(.93,.20,MAT.disco,0,.04,0,disco);
 for(let k=0;k<4;k++){
