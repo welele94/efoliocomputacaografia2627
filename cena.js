@@ -246,27 +246,58 @@ const direita=criarEngrenagem({
   pontoMat:MAT.rosa,pontoAng:1.95
 });
 
-// Disco com quatro ranhuras, por enquanto representadas visualmente.
-// A geometria das ranhuras sera afinada pela imagem de referencia.
+// Disco claro com quatro ranhuras abertas: sem faixas pretas por cima.
+// Conserva o ponto laranja e as suas coordenadas locais afinadas.
 const disco=new THREE.Group();
 disco.position.set(2.80,.40,1.80);
 scene.add(disco);
-cilindro(.88,.20,MAT.disco,0,.04,0,disco);
-for(let k=0;k<4;k++){
-  const a=k*Math.PI/2;
-  const ran=caixa(.59,.012,.17,MAT.preto,0,.148,0,disco);
-  ran.position.x=.62*Math.cos(a);
-  ran.position.z=.62*Math.sin(a);
-  ran.rotation.y=-a;
-}
-cilindro(.07,.20,MAT.prata,0,.13,0,disco);
-const anguloLaranja = 0.80;   // vai afinando
-const raioLaranja = 0.64;
 
+function criarDiscoRanhurado(raio=0.88,espessura=0.20) {
+  const perfil=new THREE.Shape();
+  const meiaLargura=0.075;
+  const fundoRanhura=0.23;
+  const semiAngulo=Math.atan2(meiaLargura,raio);
+  let primeiro=true;
+  for(let k=0;k<4;k++){
+    const ang=k*Math.PI/2;
+    const ux=Math.cos(ang),uz=Math.sin(ang);
+    const tx=-uz,tz=ux;
+    const vertices=[
+      [(raio+.02)*ux-meiaLargura*tx,(raio+.02)*uz-meiaLargura*tz],
+      [fundoRanhura*ux-meiaLargura*tx,fundoRanhura*uz-meiaLargura*tz],
+      [fundoRanhura*ux+meiaLargura*tx,fundoRanhura*uz+meiaLargura*tz],
+      [(raio+.02)*ux+meiaLargura*tx,(raio+.02)*uz+meiaLargura*tz]
+    ];
+    for(const [x,z] of vertices){
+      if(primeiro){perfil.moveTo(x,z);primeiro=false;}
+      else perfil.lineTo(x,z);
+    }
+    const comeco=ang+semiAngulo;
+    const fim=ang+Math.PI/2-semiAngulo;
+    for(let j=1;j<=16;j++){
+      const t=comeco+(fim-comeco)*j/16;
+      perfil.lineTo(raio*Math.cos(t),raio*Math.sin(t));
+    }
+  }
+  perfil.closePath();
+  const furoCentral=new THREE.Path();
+  furoCentral.absarc(0,0,.065,0,Math.PI*2,true);
+  perfil.holes.push(furoCentral);
+  const geo=new THREE.ExtrudeGeometry(perfil,{
+    depth:espessura,bevelEnabled:false,curveSegments:24
+  });
+  geo.rotateX(-Math.PI/2);
+  const o=mesh(geo,MAT.disco,disco);
+  o.position.y=-.06;
+}
+criarDiscoRanhurado();
+
+const anguloLaranja = 0.80;
+const raioLaranja = 0.64;
 ponto(
   MAT.laranja,
-  Math.cos(anguloLaranja) * raioLaranja,
-  Math.sin(anguloLaranja) * raioLaranja,
+  Math.cos(anguloLaranja)*raioLaranja,
+  Math.sin(anguloLaranja)*raioLaranja,
   0.16,
   disco
 );
@@ -364,7 +395,9 @@ function anguloDisco(t) {
   const completos=Math.floor(desde/CONFIG.PERIODO_DISCO_S);
   const dentro=desde%CONFIG.PERIODO_DISCO_S;
   const frac=Math.min(1,dentro/CONFIG.DURACAO_ACIONAMENTO_S);
-  return rad(CONFIG.PASSO_DISCO_GRAUS)*(completos+suavizar(frac));
+  // Acelera desde zero ate ao meio do encaixe e abranda ate parar.
+  const progresso=0.5-0.5*Math.cos(Math.PI*frac);
+  return rad(CONFIG.PASSO_DISCO_GRAUS)*(completos+progresso);
 }
 
 const origemCamara=new THREE.Vector3(-9.1,7.0,5.6);
