@@ -43,6 +43,11 @@ const CONFIG = {
   DURACAO_ACIONAMENTO_S: 0.545,     // observacao: 540-550 ms
   PASSO_DISCO_GRAUS: 90,
   PERIODO_ESQUERDA_S: 10,
+  // Fases ajustaveis em radianos; valores atuais preservam o alinhamento V1.
+  FASE_ESQUERDA_RAD: 0,
+  FASE_PEQUENA_RAD: 0,
+  FASE_CONJUNTO_DOURADO_RAD: 0,
+  FASE_DIREITA_RAD: 0,
   PERIODO_CINZENTA_PEQUENA_S: 6,
   PERIODO_DOURADA_SUPERIOR_S: 8,
   PERIODO_CINZENTA_DIREITA_S: 5,
@@ -353,13 +358,20 @@ const raioCamara=Math.hypot(origemCamara.x,origemCamara.z);
 const angCamara=Math.atan2(origemCamara.x,origemCamara.z);
 
 function atualizar(t) {
-  // Periodos e fases sao parametros do prototipo V1, nao dados definitivos.
-  esquerda.rotation.y=-2*Math.PI*t/CONFIG.PERIODO_ESQUERDA_S;
-  pequena.rotation.y=+2*Math.PI*t/CONFIG.PERIODO_CINZENTA_PEQUENA_S;
-  grande.rotation.y=-2*Math.PI*t/CONFIG.PERIODO_DOURADA_GRANDE_S;
-  // As duas douradas direitas partilham eixo e angulo.
+  // Modo video: periodos observados (provisorios). Modo mecanico:
+  // dentes 20:12 / 12:16 / 25:16 para testar relacoes de contacto.
+  esquerda.rotation.y=CONFIG.FASE_ESQUERDA_RAD-2*Math.PI*t/CONFIG.PERIODO_ESQUERDA_S;
+  if (debugMecanico) {
+    pequena.rotation.y=CONFIG.FASE_PEQUENA_RAD-(esquerda.rotation.y-CONFIG.FASE_ESQUERDA_RAD)*20/12;
+    grande.rotation.y=CONFIG.FASE_CONJUNTO_DOURADO_RAD-(pequena.rotation.y-CONFIG.FASE_PEQUENA_RAD)*12/16;
+    direita.rotation.y=CONFIG.FASE_DIREITA_RAD-(grande.rotation.y-CONFIG.FASE_CONJUNTO_DOURADO_RAD)*25/16;
+  } else {
+    pequena.rotation.y=CONFIG.FASE_PEQUENA_RAD+2*Math.PI*t/CONFIG.PERIODO_CINZENTA_PEQUENA_S;
+    grande.rotation.y=CONFIG.FASE_CONJUNTO_DOURADO_RAD-2*Math.PI*t/CONFIG.PERIODO_DOURADA_GRANDE_S;
+    direita.rotation.y=CONFIG.FASE_DIREITA_RAD+2*Math.PI*t/CONFIG.PERIODO_CINZENTA_DIREITA_S;
+  }
+  // Conjunto composto: as duas engrenagens douradas do centro sao solidarias.
   superior.rotation.y=grande.rotation.y;
-  direita.rotation.y=+2*Math.PI*t/CONFIG.PERIODO_CINZENTA_DIREITA_S;
   disco.rotation.y=-anguloDisco(t);
   const a=angCamara+CONFIG.VELOCIDADE_CAMARA_RAD_S*t;
   camera.position.set(raioCamara*Math.sin(a),origemCamara.y,raioCamara*Math.cos(a));
@@ -367,11 +379,105 @@ function atualizar(t) {
   document.getElementById('tempo').textContent=t.toFixed(2);
 }
 
-const inicio=performance.now();
+// BETA 2: ferramentas de verificacao. Apenas visiveis com ?debug=1.
+// A entrega normal continua a iniciar automaticamente em tempo real, sem UI.
+const modoDebug = new URLSearchParams(window.location.search).get('debug') === '1';
+let debugMecanico = false;
+let pausado = modoDebug;
+let tempoManual = 0;
+let relogioBase = performance.now();
+let tempoBase = 0;
+let velocidadeReproducao = 1;
+let controleTempo = null;
+let indicadorDebug = null;
+
+function tempoAtual(agora) {
+  if (pausado) return tempoManual;
+  return ((tempoBase + (agora-relogioBase)/1000*velocidadeReproducao)
+    % CONFIG.DURACAO_VIDEO_S + CONFIG.DURACAO_VIDEO_S) % CONFIG.DURACAO_VIDEO_S;
+}
+function definirTempo(t) {
+  tempoManual = Math.max(0,Math.min(CONFIG.DURACAO_VIDEO_S,t));
+  tempoBase=tempoManual;
+  relogioBase=performance.now();
+  atualizar(tempoManual);
+  renderer.render(scene,camera);
+  if (controleTempo) controleTempo.value=String(Math.round(tempoManual*30));
+}
+function criarControlosDebug() {
+  const painel=document.createElement('div');
+  painel.style.cssText='position:fixed;right:12px;bottom:12px;z-index:20;'+
+    'background:#151a20ed;color:white;padding:12px;border:1px solid #59636e;'+
+    'border-radius:8px;font:13px monospace;max-width:390px';
+  const titulo=document.createElement('div');
+  titulo.textContent='BETA 2 · analise temporal (30 fps)';
+  titulo.style.marginBottom='8px';
+  painel.appendChild(titulo);
+  controleTempo=document.createElement('input');
+  controleTempo.type='range';controleTempo.min='0';controleTempo.max='900';
+  controleTempo.step='1';controleTempo.value='0';
+  controleTempo.style.width='100%';
+  controleTempo.addEventListener('input',()=>{
+    pausado=true;botaoPlay.textContent='Reproduzir';
+    definirTempo(Number(controleTempo.value)/30);
+  });
+  painel.appendChild(controleTempo);
+  indicadorDebug=document.createElement('div');
+  indicadorDebug.style.margin='5px 0';
+  painel.appendChild(indicadorDebug);
+  const botoes=document.createElement('div');
+  botoes.style.display='flex';botoes.style.gap='5px';botoes.style.flexWrap='wrap';
+  function botao(texto,acao) {
+    const b=document.createElement('button');
+    b.textContent=texto;b.type='button';
+    b.style.cssText='padding:5px 8px;cursor:pointer';
+    b.addEventListener('click',acao);botoes.appendChild(b);return b;
+  }
+  const botaoPlay=botao('Reproduzir',()=>{
+    if (pausado) {
+      tempoBase=tempoManual;relogioBase=performance.now();pausado=false;
+      botaoPlay.textContent='Pausar';
+    } else {
+      definirTempo(tempoAtual(performance.now()));pausado=true;
+      botaoPlay.textContent='Reproduzir';
+    }
+  });
+  function passo(frames) {
+    definirTempo(tempoAtual(performance.now())+frames/30);
+    pausado=true;botaoPlay.textContent='Reproduzir';
+  }
+  botao('-1 frame',()=>passo(-1));
+  botao('+1 frame',()=>passo(1));
+  botao('0 s',()=>{pausado=true;botaoPlay.textContent='Reproduzir';definirTempo(0);});
+  painel.appendChild(botoes);
+  const modo=document.createElement('label');
+  modo.style.cssText='display:block;margin-top:8px';
+  const checkbox=document.createElement('input');
+  checkbox.type='checkbox';
+  checkbox.addEventListener('change',()=>{
+    debugMecanico=checkbox.checked;definirTempo(tempoAtual(performance.now()));
+  });
+  modo.appendChild(checkbox);
+  modo.appendChild(document.createTextNode(' Testar razoes mecanicas (hipotese)'));
+  painel.appendChild(modo);
+  const nota=document.createElement('div');
+  nota.textContent='Normal: periodos observados. Teste: razoes por dentes, nao validado.';
+  nota.style.cssText='font-size:10px;opacity:.72;margin-top:5px';
+  painel.appendChild(nota);
+  document.body.appendChild(painel);
+}
+if (modoDebug) criarControlosDebug();
+
 function animar(agora) {
   requestAnimationFrame(animar);
-  const t=((agora-inicio)/1000)%CONFIG.DURACAO_VIDEO_S;
+  const t=tempoAtual(agora);
+  if (!pausado) tempoManual=t;
   atualizar(t);
+  if (modoDebug && controleTempo) {
+    controleTempo.value=String(Math.round(t*30));
+    indicadorDebug.textContent='t='+t.toFixed(3)+' s | f='+Math.round(t*30)+
+      ' | disco='+THREE.MathUtils.radToDeg(anguloDisco(t)).toFixed(1)+' graus';
+  }
   renderer.render(scene,camera);
 }
 window.addEventListener('resize',()=>{
