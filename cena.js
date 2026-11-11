@@ -14,6 +14,9 @@ MEDIÇÕES E OBSERVAÇÕES
 - Primeiro acionamento do disco: entre 2 e 3 s (observação do aluno).
 - Duração de um acionamento: 540 a 550 ms (estimativa do aluno).
 - Período da engrenagem do ponto rosa: ~5 s (análise preliminar).
+- Fases Beta 2: comparacao do aluno em t=0 — projeto vermelho/azul/verde
+  em 3h, rosa em 7h, laranja em 4h; referencia professor vermelho 3h,
+  azul 6h, verde 5h, rosa 11h, laranja 3h. Conversao angular provisoria.
 - Períodos das engrenagens vermelha/azul/verde: ~10/6/8 s (hipóteses
   preliminares; precisam de validação fotograma a fotograma).
 - Dimensões, eixos, materiais, iluminação e movimento de câmara deste
@@ -43,11 +46,14 @@ const CONFIG = {
   DURACAO_ACIONAMENTO_S: 0.545,     // observacao: 540-550 ms
   PASSO_DISCO_GRAUS: 90,
   PERIODO_ESQUERDA_S: 10,
-  // Fases ajustaveis em radianos; valores atuais preservam o alinhamento V1.
-  FASE_ESQUERDA_RAD: 0,
-  FASE_PEQUENA_RAD: 0,
-  FASE_CONJUNTO_DOURADO_RAD: 0,
-  FASE_DIREITA_RAD: 0,
+  // BETA 2: offsets iniciais aproximados do professor, medidos em horas
+  // de relogio no ecra. Camera inclinada: verificar visualmente em t=0.
+  // Negativo em rotation.y corresponde aproximadamente a horario no ecra.
+  FASE_ESQUERDA_RAD: 0,                 // vermelho: 3h -> 3h
+  FASE_PEQUENA_RAD: -Math.PI / 2,      // azul: 3h -> 6h
+  FASE_CONJUNTO_DOURADO_RAD: -Math.PI / 3, // verde: 3h -> 5h
+  FASE_DIREITA_RAD: -2 * Math.PI / 3,  // rosa: 7h -> 11h
+  FASE_DISCO_RAD: Math.PI / 6,         // laranja: 4h -> 3h
   PERIODO_CINZENTA_PEQUENA_S: 6,
   PERIODO_DOURADA_SUPERIOR_S: 8,
   PERIODO_CINZENTA_DIREITA_S: 5,
@@ -372,7 +378,7 @@ function atualizar(t) {
   }
   // Conjunto composto: as duas engrenagens douradas do centro sao solidarias.
   superior.rotation.y=grande.rotation.y;
-  disco.rotation.y=-anguloDisco(t);
+  disco.rotation.y=CONFIG.FASE_DISCO_RAD-anguloDisco(t);
   const a=angCamara+CONFIG.VELOCIDADE_CAMARA_RAD_S*t;
   camera.position.set(raioCamara*Math.sin(a),origemCamara.y,raioCamara*Math.cos(a));
   camera.lookAt(centroCamara);
