@@ -47,11 +47,11 @@ const CONFIG = {
   PERIODO_DOURADA_SUPERIOR_S: 8,
   PERIODO_CINZENTA_DIREITA_S: 5,
   PERIODO_DOURADA_GRANDE_S: 8,      // HIPOTESE ate confirmar acoplamento
-  RAIO_DENTES: 0.20,
+  RAIO_DENTES: 0.30,
   ALTURA_ENGRENAGEM: 0.20,
   ESPESSURA_ESQUERDA: 0.25, // hipotese: esquerda ocupa os dois niveis
-  Y_ENGRENAGEM_INFERIOR: 0.20,
-  Y_ENGRENAGEM_SUPERIOR: 0.60,
+  Y_ENGRENAGEM_INFERIOR: 0.15,
+  Y_ENGRENAGEM_SUPERIOR: 0.25,
   VELOCIDADE_CAMARA_RAD_S: 0.013,   // HIPOTESE; V1 quase estatica
   COR_FUNDO: 0x171b22
 };
@@ -142,81 +142,105 @@ for(const [x,z] of [[-6,-2.6],[6,-2.6],[-6,3.35],[6,3.35]]){
 
 // Engrenagens: perfil poligonal com dentes externos, extrudido em altura.
 // O eixo de rotacao e Y (Three.js).
-function criarEngrenagem({x,z,raio,dentes,material,pontoMat,pontoAng=0,y=.20,espessura=CONFIG.ALTURA_ENGRENAGEM}) {
+function criarEngrenagem({
+  x, z, raio, dentes, material,
+  pontoMat, pontoAng = 0,
+  y = 0.20,
+  espessura = CONFIG.ALTURA_ENGRENAGEM
+}) {
   const g = new THREE.Group();
-  g.position.set(x,y,z);
+  g.position.set(x, y, z);
   scene.add(g);
 
   const altura = espessura;
-  const profundidadeDente = CONFIG.RAIO_DENTES * 1.5;
+  const profundidadeDente = CONFIG.RAIO_DENTES;
   const passo = 2 * Math.PI / dentes;
-  const larguraDente = (2 * Math.PI * raio / dentes) * 0.55;
 
-  // Disco base ligeiramente recuado, para os dentes se destacarem.
-  mesh(new THREE.CylinderGeometry(
-    raio - profundidadeDente * 0.42,
-    raio - profundidadeDente * 0.42,
-    altura, 64
-  ), material, g);
+  const shape = new THREE.Shape();
 
-  // Cada caixa tem X radial e Z tangencial; rotacao Y = -a.
-  // A pequena sobreposicao evita falhas entre o disco e os dentes.
   for (let i = 0; i < dentes; i++) {
     const a = i * passo;
-    const dente = mesh(
-      new THREE.BoxGeometry(profundidadeDente, altura, larguraDente),
-      material, g
-    );
-    const distancia = raio - profundidadeDente * 0.05;
-    dente.position.set(
-      Math.cos(a) * distancia, 0, Math.sin(a) * distancia
-    );
-    dente.rotation.y = -a;
+
+    // perfil trapezoidal / triangular do dente
+    const pontos = [
+      [a + 0.00 * passo, raio],
+      [a + 0.18 * passo, raio + profundidadeDente],
+      [a + 0.50 * passo, raio + profundidadeDente],
+      [a + 0.62 * passo, raio],
+    ];
+
+    for (let j = 0; j < pontos.length; j++) {
+      const ang = pontos[j][0];
+      const r = pontos[j][1];
+      const px = Math.cos(ang) * r;
+      const py = Math.sin(ang) * r;
+
+      if (i === 0 && j === 0) shape.moveTo(px, py);
+      else shape.lineTo(px, py);
+    }
   }
 
-  // Eixo e marcador acompanham a face superior da engrenagem.
+  shape.closePath();
+
+  const geom = new THREE.ExtrudeGeometry(shape, {
+    depth: altura,
+    bevelEnabled: false,
+    curveSegments: 3
+  });
+
+  geom.rotateX(-Math.PI / 2);
+
+  const gear = mesh(geom, material, g);
+  gear.position.y = -altura / 2;
+
   const topo = altura / 2;
-  cilindro(.055,.10,MAT.preto,0,topo+.05,0,g);
+  cilindro(.055, .10, MAT.preto, 0, topo + .05, 0, g);
+
   if (pontoMat) {
-    ponto(pontoMat,
-      Math.cos(pontoAng)*raio*.72,
-      Math.sin(pontoAng)*raio*.72,topo+.035,g);
+    ponto(
+      pontoMat,
+      Math.cos(pontoAng) * raio * 0.72,
+      Math.sin(pontoAng) * raio * 0.72,
+      topo + .035,
+      g
+    );
   }
+
   return g;
 }
-
 // Posicoes iniciais e dimensoes sao aproximacoes para primeira comparacao.
 const esquerda=criarEngrenagem({
-  x:-3.45,z:-.48,raio:1.34,dentes:21,material:MAT.ouro,
+  x:-3.95,z:-.68,raio:1.24,dentes:20,material:MAT.ouro,
   y:CONFIG.Y_ENGRENAGEM_INFERIOR + CONFIG.ALTURA_ENGRENAGEM/2,
   espessura:CONFIG.ESPESSURA_ESQUERDA,
-  pontoMat:MAT.vermelho,pontoAng:-.1
+  pontoMat:MAT.vermelho,pontoAng:-.1,
+  espessura: .15
 });
 const pequena=criarEngrenagem({
-  x:-1.0,z:-1.10,raio:1.05,dentes:12,material:MAT.prata,
+  x:-1.7,z:-1.25,raio:.70,dentes:12,material:MAT.prata,
   y:CONFIG.Y_ENGRENAGEM_SUPERIOR,
-  pontoMat:MAT.azul,pontoAng:.0
+  pontoMat:MAT.azul,pontoAng:.0, espessura: .15
 });
 const grande=criarEngrenagem({
-  x:.88,z:.02,raio:1.36,dentes:25,material:MAT.ouro,
+  x:-.20,z:-.18,raio:1.54,dentes:25,material:MAT.ouro,
   y:CONFIG.Y_ENGRENAGEM_INFERIOR,
   pontoMat:null
 });
 const superior=criarEngrenagem({
-  x:.88,z:.02,raio:.98,dentes:16,material:MAT.ouroClaro,
+  x:-.20,z:-.18,raio:.98,dentes:16,material:MAT.ouroClaro,
   pontoMat:MAT.verde,pontoAng:0.14,y:CONFIG.Y_ENGRENAGEM_SUPERIOR
 });
 const direita=criarEngrenagem({
-  x:2.2,z:2.0,raio:.98,dentes:16,material:MAT.cinza,
+  x:1.30,z:2.0,raio:.78,dentes:16,material:MAT.cinza,
   pontoMat:MAT.rosa,pontoAng:1.95
 });
 
 // Disco com quatro ranhuras, por enquanto representadas visualmente.
 // A geometria das ranhuras sera afinada pela imagem de referencia.
 const disco=new THREE.Group();
-disco.position.set(3.50,.40,2.50);
+disco.position.set(2.80,.40,1.80);
 scene.add(disco);
-cilindro(.93,.20,MAT.disco,0,.04,0,disco);
+cilindro(.88,.20,MAT.disco,0,.04,0,disco);
 for(let k=0;k<4;k++){
   const a=k*Math.PI/2;
   const ran=caixa(.59,.012,.17,MAT.preto,0,.148,0,disco);
