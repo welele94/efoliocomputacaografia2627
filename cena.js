@@ -41,9 +41,9 @@ if (!window.THREE) throw new Error('three.min.js nao foi carregado');
 
 const CONFIG = {
   DURACAO_VIDEO_S: 30,
-  PERIODO_DISCO_S: 5.0,             // estimativa: 6 acionamentos em 30 s
+  PERIODO_DISCO_S: 4.0,             // estimativa: 6 acionamentos em 30 s
   PRIMEIRO_ACIONAMENTO_S: 2.2,      // HIPOTESE: entre 2 e 3 segundos
-  DURACAO_ACIONAMENTO_S: 0.545,     // observacao: 540-550 ms
+  DURACAO_ACIONAMENTO_S: 0.9,     // observacao: 540-550 ms
   PASSO_DISCO_GRAUS: 90,
   PERIODO_ESQUERDA_S: 10,
   // BETA 2: offsets iniciais aproximados do professor, medidos em horas
@@ -53,7 +53,7 @@ const CONFIG = {
   FASE_PEQUENA_RAD: -Math.PI / 2,      // azul: 3h -> 6h
   FASE_CONJUNTO_DOURADO_RAD: -Math.PI / 3, // verde: 3h -> 5h
   FASE_DIREITA_RAD: -2 * Math.PI / 3,  // rosa: 7h -> 11h
-  FASE_DISCO_RAD: Math.PI / 6,         // laranja: 4h -> 3h
+  FASE_DISCO_RAD: Math.PI / 4,         // laranja: 4h -> 3h
   PERIODO_CINZENTA_PEQUENA_S: 6,
   PERIODO_DOURADA_SUPERIOR_S: 8,
   PERIODO_CINZENTA_DIREITA_S: 5,
@@ -69,7 +69,7 @@ const CONFIG = {
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(CONFIG.COR_FUNDO);
-const camera = new THREE.PerspectiveCamera(43, innerWidth / innerHeight, 0.1, 140);
+const camera = new THREE.PerspectiveCamera(63, innerWidth / innerHeight, 0.1, 140);
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
@@ -260,7 +260,16 @@ for(let k=0;k<4;k++){
   ran.rotation.y=-a;
 }
 cilindro(.07,.20,MAT.prata,0,.13,0,disco);
-ponto(MAT.laranja,.60,.22,.16,disco);
+const anguloLaranja = 0.80;   // vai afinando
+const raioLaranja = 0.64;
+
+ponto(
+  MAT.laranja,
+  Math.cos(anguloLaranja) * raioLaranja,
+  Math.sin(anguloLaranja) * raioLaranja,
+  0.16,
+  disco
+);
 
 // Braco condutor solidario com a engrenagem cinzenta da direita.
 const braço=new THREE.Group();
