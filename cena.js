@@ -68,10 +68,12 @@ const CONFIG = {
   FIM_ORBITA_CAMARA_S: 30.0,
   ARCO_CAMARA_GRAUS: 105, // aproximacao visual, por confirmar com frames
   ALTURA_FINAL_CAMARA: 8.8,
-  // BETA 3 - luz quente concentrada nas engrenagens centrais.
-  PERIODO_LUZ_S: 18.0, // hipotese baseada em 0/5/10/15/20/25/29 s
-  LUZ_SPOT_MIN: 0.04,
-  LUZ_SPOT_MAX: 70.55, // foco discreto, sem queimar as engrenagens
+  // BETA 3: luz quente constante, apenas o alvo se desloca.
+  // 0-11 s: diagonal ate ao conjunto central; 11-23 s: fixa;
+  // 23-30 s: continua a mesma diagonal. Posicoes aproximadas.
+  INICIO_PAUSA_FOCO_S: 11,
+  FIM_PAUSA_FOCO_S: 23,
+  LUZ_SPOT_MAX: 70.55, // intensidade ajustada pelo aluno: preservada
   COR_FUNDO: 0x171b22
 };
 
@@ -429,9 +431,8 @@ const faixa=mesh(new THREE.PlaneGeometry(2.90,.22),
   new THREE.MeshBasicMaterial({map:gradTex}),quadro);
 faixa.position.set(0,-.78,.072);
 
-// BETA 3: iluminacao global reduzida e equilibrada; foco periodico subtil.
-// O video mostra a engrenagem central muito iluminada em t~0 e 15-20,
-// e menos iluminada em t~5-10 e 25-29. Hipotese: ciclo ~18 segundos.
+// BETA 3: ambiente e luz direcional atenuados pelo aluno.
+// O foco quente mantem a origem e a intensidade; anima-se apenas o alvo.
 const ambiente=new THREE.AmbientLight(0xffffff,.08);
 scene.add(ambiente);
 const sol=new THREE.DirectionalLight(0xfff2e1,.15);
@@ -454,6 +455,13 @@ scene.add(foco.target);
 foco.castShadow=true;
 foco.shadow.mapSize.set(1024,1024);
 foco.shadow.bias=-.00015;
+
+// Trajetoria do foco no plano do tabuleiro. Mantemos o ponto central
+// exatamente sobre o eixo do conjunto dourado do ponto verde.
+// Os extremos sao estimativas visuais e podem ser afinados depois.
+const alvoFocoInicial = new THREE.Vector3(-4.8,0.1,2.6);
+const alvoFocoVerde = new THREE.Vector3(superior.position.x,0.1,superior.position.z);
+const alvoFocoFinal = new THREE.Vector3(2.2,0.1,-1.3);
 
 function rad(graus){ return graus*Math.PI/180; }
 function suavizar(p){ return p*p*(3-2*p); }
@@ -510,11 +518,21 @@ function atualizar(t) {
   );
   camera.lookAt(centroCamara);
 
-  // Luz localizada: inicia e termina cada pico suavemente.
-  const oscilacao=Math.max(0,Math.cos(2*Math.PI*t/CONFIG.PERIODO_LUZ_S));
-  const pulso=oscilacao*oscilacao;
-  foco.intensity=CONFIG.LUZ_SPOT_MIN+
-    (CONFIG.LUZ_SPOT_MAX-CONFIG.LUZ_SPOT_MIN)*pulso;
+  // Movimento espacial do foco, sem oscilacao na intensidade.
+  // As duas transicoes sao continuas nos instantes 11 s e 23 s.
+  const tParagem=CONFIG.INICIO_PAUSA_FOCO_S;
+  const tRetoma=CONFIG.FIM_PAUSA_FOCO_S;
+  if(t<tParagem) {
+    const u=t/tParagem;
+    const suave=u*u*(3-2*u);
+    foco.target.position.lerpVectors(alvoFocoInicial,alvoFocoVerde,suave);
+  } else if(t<tRetoma) {
+    foco.target.position.copy(alvoFocoVerde);
+  } else {
+    const u=Math.min(1,(t-tRetoma)/(CONFIG.DURACAO_VIDEO_S-tRetoma));
+    const suave=u*u*(3-2*u);
+    foco.target.position.lerpVectors(alvoFocoVerde,alvoFocoFinal,suave);
+  }
   document.getElementById('tempo').textContent=t.toFixed(2);
 }
 
