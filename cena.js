@@ -532,8 +532,9 @@ function anguloDisco(t) {
 // Orbita apenas depois de t~15 s, sem depender da taxa de fotogramas.
 const origemCamara=new THREE.Vector3(-5.1,6.0,7.2);
 const centroCamara=new THREE.Vector3(-.96,-.5,-.1);
-const raioCamara=Math.hypot(origemCamara.x-centroCamara.x,origemCamara.z-centroCamara.z);
-const angCamara=Math.atan2(origemCamara.x-centroCamara.x,origemCamara.z-centroCamara.z);
+// O modo debug ajusta estes dois vetores diretamente em passos de 0.5.
+// O raio e o angulo sao recalculados para os controlos tambem funcionarem
+// quando se testa a cena num instante posterior ao inicio da orbita.
 
 function atualizar(t) {
   // Modo video: periodos observados (provisorios). Modo mecanico:
@@ -556,6 +557,8 @@ function atualizar(t) {
     (t-CONFIG.INICIO_ORBITA_CAMARA_S)/
     (CONFIG.FIM_ORBITA_CAMARA_S-CONFIG.INICIO_ORBITA_CAMARA_S)));
   const orbital=progressoCamara*progressoCamara*(3-2*progressoCamara);
+  const raioCamara=Math.hypot(origemCamara.x-centroCamara.x,origemCamara.z-centroCamara.z);
+  const angCamara=Math.atan2(origemCamara.x-centroCamara.x,origemCamara.z-centroCamara.z);
   const a=angCamara+rad(CONFIG.ARCO_CAMARA_GRAUS)*orbital;
   const alturaCamara=origemCamara.y+
     (CONFIG.ALTURA_FINAL_CAMARA-origemCamara.y)*orbital;
@@ -657,6 +660,78 @@ function criarControlosDebug() {
   nota.textContent='Normal: periodos observados. Teste: razoes por dentes, nao validado.';
   nota.style.cssText='font-size:10px;opacity:.72;margin-top:5px';
   painel.appendChild(nota);
+
+  // Afinacao visual da camera: 6 controlos independentes, +/- 0.5 unidades.
+  // So aparece com ?debug=1; a configuracao final pode ser copiada para
+  // as duas constantes origemCamara e centroCamara do codigo.
+  const separadorCamara=document.createElement('div');
+  separadorCamara.style.cssText='border-top:1px solid #59636e;margin:11px 0 8px;padding-top:8px;font-weight:bold';
+  separadorCamara.textContent='CAMARA · passo 0.5';
+  painel.appendChild(separadorCamara);
+  const linhasCamara=[];
+  function mostrarCamara(){
+    for(const linha of linhasCamara){
+      linha.valor.textContent=linha.vetor[linha.eixo].toFixed(2);
+    }
+  }
+  function ajustarCamara(vetor,eixo,delta){
+    vetor[eixo]=Math.round((vetor[eixo]+delta)*100)/100;
+    mostrarCamara();
+    // Mantem o instante da timeline; atualiza o enquadramento imediatamente.
+    atualizar(tempoAtual(performance.now()));
+    renderer.render(scene,camera);
+  }
+  function linhaCamara(rotulo,vetor,eixo){
+    const linha=document.createElement('div');
+    linha.style.cssText='display:flex;align-items:center;gap:5px;margin:4px 0';
+    const nome=document.createElement('span');
+    nome.textContent=rotulo;
+    nome.style.cssText='min-width:76px';
+    linha.appendChild(nome);
+    function pequenoBotao(texto,delta){
+      const b=document.createElement('button');
+      b.type='button';b.textContent=texto;
+      b.style.cssText='min-width:37px;padding:4px 7px;cursor:pointer';
+      b.addEventListener('click',()=>ajustarCamara(vetor,eixo,delta));
+      linha.appendChild(b);
+    }
+    pequenoBotao('-0.5',-0.5);
+    const valor=document.createElement('span');
+    valor.style.cssText='min-width:53px;text-align:center;font-weight:bold';
+    linha.appendChild(valor);
+    pequenoBotao('+0.5',0.5);
+    linhasCamara.push({vetor,eixo,valor});
+    painel.appendChild(linha);
+  }
+  for(const eixo of ['x','y','z']) linhaCamara('Posicao '+eixo.toUpperCase(),origemCamara,eixo);
+  for(const eixo of ['x','y','z']) linhaCamara('Olhar '+eixo.toUpperCase(),centroCamara,eixo);
+  mostrarCamara();
+
+  const copiarCamara=document.createElement('button');
+  copiarCamara.type='button';
+  copiarCamara.textContent='Copiar valores da camara';
+  copiarCamara.style.cssText='width:100%;margin-top:8px;padding:7px;cursor:pointer';
+  copiarCamara.addEventListener('click',()=>{
+    const fmt=v=>[v.x,v.y,v.z].map(n=>n.toFixed(2)).join(', ');
+    const codigo='const origemCamara=new THREE.Vector3('+fmt(origemCamara)+');\\n'+
+      'const centroCamara=new THREE.Vector3('+fmt(centroCamara)+');';
+    // Clipboard pode ser negado em contextos nao seguros (file://);
+    // fallback: janela de texto selecionavel para copia manual.
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(codigo).then(()=>{
+        copiarCamara.textContent='Copiado!';
+      }).catch(()=>window.prompt('Copia estes valores:',codigo));
+    }else{
+      window.prompt('Copia estes valores:',codigo);
+    }
+  });
+  painel.appendChild(copiarCamara);
+  const notaCamara=document.createElement('div');
+  notaCamara.textContent='Posicao = onde esta a camera; Olhar = ponto para onde aponta. Os ajustes sao temporarios ate os copiares para cena.js.';
+  notaCamara.style.cssText='font-size:10px;opacity:.75;margin-top:6px;line-height:1.4';
+  painel.appendChild(notaCamara);
+  painel.style.maxHeight='calc(100vh - 32px)';
+  painel.style.overflowY='auto';
   document.body.appendChild(painel);
 }
 if (modoDebug) criarControlosDebug();
