@@ -63,7 +63,15 @@ const CONFIG = {
   ESPESSURA_ESQUERDA: 0.25, // hipotese: esquerda ocupa os dois niveis
   Y_ENGRENAGEM_INFERIOR: 0.15,
   Y_ENGRENAGEM_SUPERIOR: 0.25,
-  VELOCIDADE_CAMARA_RAD_S: 0.013,   // HIPOTESE; V1 quase estatica
+  // BETA 3 - camera: enquadramento fixo ate ~15 s, depois orbita progressiva.
+  INICIO_ORBITA_CAMARA_S: 15.0,
+  FIM_ORBITA_CAMARA_S: 30.0,
+  ARCO_CAMARA_GRAUS: 105, // aproximacao visual, por confirmar com frames
+  ALTURA_FINAL_CAMARA: 8.8,
+  // BETA 3 - luz quente concentrada nas engrenagens centrais.
+  PERIODO_LUZ_S: 18.0, // hipotese baseada em 0/5/10/15/20/25/29 s
+  LUZ_SPOT_MIN: 0.15,
+  LUZ_SPOT_MAX: 4.8,
   COR_FUNDO: 0x171b22
 };
 
@@ -421,9 +429,12 @@ const faixa=mesh(new THREE.PlaneGeometry(2.90,.22),
   new THREE.MeshBasicMaterial({map:gradTex}),quadro);
 faixa.position.set(0,-.78,.072);
 
-// Iluminacao preliminar.
-scene.add(new THREE.AmbientLight(0xffffff,.45));
-const sol=new THREE.DirectionalLight(0xffebcb,2.45);
+// BETA 3: iluminacao base mais suave + foco quente e periodico.
+// O video mostra a engrenagem central muito iluminada em t~0 e 15-20,
+// e menos iluminada em t~5-10 e 25-29. Hipotese: ciclo ~18 segundos.
+const ambiente=new THREE.AmbientLight(0xffffff,.58);
+scene.add(ambiente);
+const sol=new THREE.DirectionalLight(0xffedcf,1.35);
 sol.position.set(-3,10,5);
 sol.castShadow=true;
 sol.shadow.mapSize.set(2048,2048);
@@ -431,6 +442,18 @@ sol.shadow.camera.left=-12;sol.shadow.camera.right=12;
 sol.shadow.camera.top=12;sol.shadow.camera.bottom=-12;
 sol.shadow.bias=-.00015;
 scene.add(sol);
+
+// Luz adicional que concentra brilho nas duas rodas douradas centrais.
+const foco=new THREE.SpotLight(
+  0xfff0ae,CONFIG.LUZ_SPOT_MAX,0,Math.PI/4.6,.78,1.0
+);
+foco.position.set(-.75,5.4,-.35);
+foco.target.position.set(-.35,.08,-.25);
+scene.add(foco);
+scene.add(foco.target);
+foco.castShadow=true;
+foco.shadow.mapSize.set(1024,1024);
+foco.shadow.bias=-.00015;
 
 function rad(graus){ return graus*Math.PI/180; }
 function suavizar(p){ return p*p*(3-2*p); }
@@ -449,10 +472,12 @@ function anguloDisco(t) {
   return rad(CONFIG.PASSO_DISCO_GRAUS)*(completos+progresso);
 }
 
-const origemCamara=new THREE.Vector3(-9.1,7.0,5.6);
-const centroCamara=new THREE.Vector3(-1.2,1.2,-3.90);
-const raioCamara=Math.hypot(origemCamara.x,origemCamara.z);
-const angCamara=Math.atan2(origemCamara.x,origemCamara.z);
+// Camera: aproximada ao enquadramento inicial do original.
+// Orbita apenas depois de t~15 s, sem depender da taxa de fotogramas.
+const origemCamara=new THREE.Vector3(-9.1,7.0,8.2);
+const centroCamara=new THREE.Vector3(-.6,.45,.1);
+const raioCamara=Math.hypot(origemCamara.x-centroCamara.x,origemCamara.z-centroCamara.z);
+const angCamara=Math.atan2(origemCamara.x-centroCamara.x,origemCamara.z-centroCamara.z);
 
 function atualizar(t) {
   // Modo video: periodos observados (provisorios). Modo mecanico:
@@ -470,9 +495,26 @@ function atualizar(t) {
   // Conjunto composto: as duas engrenagens douradas do centro sao solidarias.
   superior.rotation.y=grande.rotation.y;
   disco.rotation.y=CONFIG.FASE_DISCO_RAD-anguloDisco(t);
-  const a=angCamara+CONFIG.VELOCIDADE_CAMARA_RAD_S*t;
-  camera.position.set(raioCamara*Math.sin(a),origemCamara.y,raioCamara*Math.cos(a));
+  // Movimento da camera: fixa no inicio, orbita suavemente apos ~15 s.
+  const progressoCamara=Math.max(0,Math.min(1,
+    (t-CONFIG.INICIO_ORBITA_CAMARA_S)/
+    (CONFIG.FIM_ORBITA_CAMARA_S-CONFIG.INICIO_ORBITA_CAMARA_S)));
+  const orbital=progressoCamara*progressoCamara*(3-2*progressoCamara);
+  const a=angCamara+rad(CONFIG.ARCO_CAMARA_GRAUS)*orbital;
+  const alturaCamara=origemCamara.y+
+    (CONFIG.ALTURA_FINAL_CAMARA-origemCamara.y)*orbital;
+  camera.position.set(
+    centroCamara.x+raioCamara*Math.sin(a),
+    alturaCamara,
+    centroCamara.z+raioCamara*Math.cos(a)
+  );
   camera.lookAt(centroCamara);
+
+  // Luz localizada: inicia e termina cada pico suavemente.
+  const oscilacao=Math.max(0,Math.cos(2*Math.PI*t/CONFIG.PERIODO_LUZ_S));
+  const pulso=oscilacao*oscilacao;
+  foco.intensity=CONFIG.LUZ_SPOT_MIN+
+    (CONFIG.LUZ_SPOT_MAX-CONFIG.LUZ_SPOT_MIN)*pulso;
   document.getElementById('tempo').textContent=t.toFixed(2);
 }
 
