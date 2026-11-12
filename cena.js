@@ -41,9 +41,9 @@ if (!window.THREE) throw new Error('three.min.js nao foi carregado');
 
 const CONFIG = {
   DURACAO_VIDEO_S: 30,
-  PERIODO_DISCO_S: 4.0,             // estimativa: 6 acionamentos em 30 s
-  PRIMEIRO_ACIONAMENTO_S: 2.2,      // HIPOTESE: entre 2 e 3 segundos
-  DURACAO_ACIONAMENTO_S: 0.9,     // observacao: 540-550 ms
+  PERIODO_DISCO_S: 5.0,             // estimativa: 6 acionamentos em 30 s
+  PRIMEIRO_ACIONAMENTO_S: 2.500,      // HIPOTESE: entre 2 e 3 segundos
+  DURACAO_ACIONAMENTO_S: 0.967,     // observacao: 540-550 ms
   PASSO_DISCO_GRAUS: 90,
   PERIODO_ESQUERDA_S: 10,
   // BETA 2: offsets iniciais aproximados do professor, medidos em horas
@@ -254,7 +254,7 @@ scene.add(disco);
 
 function criarDiscoRanhurado(raio=0.88,espessura=0.20) {
   const perfil=new THREE.Shape();
-  const meiaLargura=0.075;
+  const meiaLargura=0.095;
   const fundoRanhura=0.23;
   const semiAngulo=Math.atan2(meiaLargura,raio);
   let primeiro=true;
@@ -302,12 +302,25 @@ ponto(
   disco
 );
 
-// Braco condutor solidario com a engrenagem cinzenta da direita.
-const braço=new THREE.Group();
+ // Braço condutor em formato de L invertido
+const braço = new THREE.Group();
 direita.add(braço);
-const haste=caixa(1.15,.07,.115,MAT.branco,.58,.29,-.08,braço);
-cilindro(.11,.38,MAT.preto,1.12,.20,-.08,braço);
-cilindro(.105,.28,MAT.preto,0,.23,-.08,braço);
+// Suporte preto no eixo da engrenagem
+// antes era um cilindro grosso; agora fica tipo haste + cabeça
+cilindro(.055, .32, MAT.preto, 0, .26, 0, braço);   // haste fina
+cilindro(.095, .05, MAT.preto, 0, .445, 0, braço);  // cabeça tipo parafuso
+// Barra horizontal branca, mantida
+caixa(1.22, .075, .10, MAT.branco, -.30, .54, 0, braço);
+// Ponta branca dobrada para baixo, mantida
+caixa(.10, .34, .11, MAT.branco, -.90, .40, 0, braço);
+// Pino condutor na extremidade
+// mais fino e com uma pequena cabeça
+cilindro(.04, .11, MAT.preto, -1.15, .07, 0, braço);   // haste
+cilindro(.065, .03, MAT.preto, -1.15, .13, 0, braço);  // cabecinha
+// Mantém o teu ângulo atual
+braço.rotation.y = Math.PI / 1.8;
+
+
 
 // Regua com apontador multicolorido na engrenagem dourada esquerda.
 const indicador=new THREE.Group();
