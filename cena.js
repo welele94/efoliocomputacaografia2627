@@ -105,7 +105,8 @@ const MAT = {
   verde: new THREE.MeshStandardMaterial({color:0x26df86}),
   rosa: new THREE.MeshStandardMaterial({color:0xe75bd0}),
   laranja: new THREE.MeshStandardMaterial({color:0xff8d18}),
-  branco: new THREE.MeshStandardMaterial({color:0xf7f7f7, roughness:0.22})
+  branco: new THREE.MeshStandardMaterial({color:0xf7f7f7, roughness:0.22}),
+  esfera: new THREE.MeshStandardMaterial({color:0xf3f3f1, roughness:0.42, metalness:0.0})
 };
 
 function mesh(geometry, material, parent=scene) {
@@ -349,7 +350,7 @@ caixa(.18,.08,.22,MAT.ouroClaro,.66,.33,-.27,indicador);
 cilindro(.06,.28,MAT.preto,.91,.18,-.27,indicador);
 
 // Esfera branca frontal.
-const esfera=mesh(new THREE.SphereGeometry(.70,32,22),MAT.branco);
+const esfera=mesh(new THREE.SphereGeometry(.70,32,22),MAT.esfera);
 esfera.position.set(-5.95,.85,2);
 
 // Painel: nuvens procedurais por ruido de valor em multiplas escalas (fBm).
@@ -463,11 +464,11 @@ faixa.position.set(0,-.78,.072);
 
 // BETA 3: luz principal neutra, movel; preenchimento ambiente fraco e frio.
 // Luminosidade do solo de fundo quase constante na referencia.
-const ambiente=new THREE.AmbientLight(0xc8d8f5,.08);
+const ambiente=new THREE.AmbientLight(0xc8d8f5,.18);
 scene.add(ambiente);
 const sol=new THREE.DirectionalLight(0xfff2e1,.15);
 sol.position.set(-3,10,5);
-sol.castShadow=true;
+sol.castShadow=false;
 sol.shadow.mapSize.set(2048,2048);
 sol.shadow.camera.left=-12;sol.shadow.camera.right=12;
 sol.shadow.camera.top=12;sol.shadow.camera.bottom=-12;
@@ -497,12 +498,13 @@ const focoGeral = new THREE.SpotLight(
   1.0
 );
 
-focoGeral.position.set(15.8, 7.5, 4.8);   // mesma zona geral do foco principal
-focoGeral.target.position.set(-15, .05, 10.2); // centro da plataforma
+// Luz fixa da direita: iluminacao predominante da esfera.
+focoGeral.position.set(10.5, 8.8, 5.2);
+focoGeral.target.position.set(-1.2, 0.05, 0.8);
 focoGeral.castShadow = true;
 focoGeral.shadow.mapSize.set(2048, 2048);
 focoGeral.shadow.bias = -0.00015;
-focoGeral.shadow.radius = 3;
+focoGeral.shadow.radius = 4;
 
 scene.add(focoGeral);
 scene.add(focoGeral.target);
