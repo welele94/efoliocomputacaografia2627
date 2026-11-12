@@ -68,15 +68,14 @@ const CONFIG = {
   FIM_ORBITA_CAMARA_S: 30.0,
   ARCO_CAMARA_GRAUS: 105, // aproximacao visual, por confirmar com frames
   ALTURA_FINAL_CAMARA: 8.8,
-  // BETA 3: feixe estreito percorre diagonal repetidamente.
-  // 0-11 s: centro -> direito -> esquerdo -> direito -> esquerdo -> centro.
-  // 11-23 s: centro fixo; 23-30 s: movimento retomado.
-  INICIO_PAUSA_FOCO_S: 11,
-  FIM_PAUSA_FOCO_S: 23,
-  ABERTURA_FOCO_RAD: Math.PI / 12, // 15 graus de semiabertura
+  // BETA 3: dois ciclos de 6 s; depois o foco fica no centro.
+  // Interpretacao da medicao de luminosidade: centro t=0/6/12,
+  // extremo oposto t=1.5 e esquerda/esfera t=4.5.
+  PERIODO_LUZ_S: 6.0,
+  PARAGEM_LUZ_S: 12.0,
+  ABERTURA_FOCO_RAD: Math.PI / 12, // manter feixe estreito
   PENUMBRA_FOCO: 0.35,
-  LUZ_SPOT_MAX: 70.55, // intensidade ajustada pelo aluno: preservada
-  LUZ_PREENCHIMENTO: 10.0, // foco fixo, suave e largo para revelar o tabuleiro
+  LUZ_SPOT_MAX: 70.55, // intensidade afinada pelo aluno; sem animacao
   COR_FUNDO: 0x171b22
 };
 
@@ -434,9 +433,9 @@ const faixa=mesh(new THREE.PlaneGeometry(2.90,.22),
   new THREE.MeshBasicMaterial({map:gradTex}),quadro);
 faixa.position.set(0,-.78,.072);
 
-// BETA 3: ambiente e luz direcional atenuados pelo aluno.
-// O foco quente mantem a origem e a intensidade; anima-se apenas o alvo.
-const ambiente=new THREE.AmbientLight(0xffffff,.08);
+// BETA 3: luz principal neutra, movel; preenchimento ambiente fraco e frio.
+// Luminosidade do solo de fundo quase constante na referencia.
+const ambiente=new THREE.AmbientLight(0xc8d8f5,.08);
 scene.add(ambiente);
 const sol=new THREE.DirectionalLight(0xfff2e1,.15);
 sol.position.set(-3,10,5);
@@ -447,9 +446,9 @@ sol.shadow.camera.top=12;sol.shadow.camera.bottom=-12;
 sol.shadow.bias=-.00015;
 scene.add(sol);
 
-// Luz adicional que concentra brilho nas duas rodas douradas centrais.
+// Luz principal: cor neutra; intensidade e posicao da fonte fixas.
 const foco=new THREE.SpotLight(
-  0xfff3d9,CONFIG.LUZ_SPOT_MAX,0,
+  0xffffff,CONFIG.LUZ_SPOT_MAX,0,
   CONFIG.ABERTURA_FOCO_RAD,CONFIG.PENUMBRA_FOCO,1.0
 );
 foco.position.set(7, 8, -4);
@@ -460,47 +459,31 @@ foco.castShadow=true;
 foco.shadow.mapSize.set(1024,1024);
 foco.shadow.bias=-.00015;
 
-// Segundo foco: preenchimento suave e estatico, independente do foco movel.
-// Aponta ao centro da plataforma, sem sombras adicionais demasiado marcadas.
-const focoSuave = new THREE.SpotLight(
-  0xffedd0,
-  CONFIG.LUZ_PREENCHIMENTO,
-  0,
-  Math.PI / 3.2, // abertura larga
-  0.95,          // bordas difusas
-  1.0
-);
-focoSuave.position.set(2.5, 7.5, 5.5);
-focoSuave.target.position.set(0, 0.05, 0.45);
-focoSuave.castShadow = false;
-scene.add(focoSuave);
-scene.add(focoSuave.target);
+// O foco secundario quente foi removido: a luz de preenchimento
+// fica a cargo da AmbientLight fria e fraca, sem outro feixe central.
 
-// Alvos fixos no mundo: nao mudam quando a camera orbita.
-// Extremos estimados a partir do enquadramento do video (a afinar).
+// Alvos da luz sobre a plataforma, aproximados a partir de brilho medido.
+// Nota: coordenadas 3D dos extremos ainda nao foram inferidas das sombras.
 const alvoFocoCentro = new THREE.Vector3(superior.position.x,0.1,superior.position.z);
-const alvoFocoDireito = new THREE.Vector3(2.2,0.1,-1.3);
+const alvoFocoOposto = new THREE.Vector3(2.2,0.1,-1.3);
 const alvoFocoEsquerdo = new THREE.Vector3(-4.1,0.1,2.1);
 
-// Interpolacao de pontos-chave. Deterministica e sem saltos nos limites.
-// Smoothstep faz o feixe abrandar nas extremidades de cada passagem.
+// Dois ciclos identicos de 6 s (de 0 a 12). Depois, fixo ao centro.
+// Percurso em cada ciclo: centro (0) -> oposto (1.5) ->
+// esquerda (4.5) -> centro (6). Interpolacao sem saltos.
 function alvoFocoPorTempo(t) {
-  const marcas = [
+  if (t>=CONFIG.PARAGEM_LUZ_S) return alvoFocoCentro.clone();
+  const fase=((t%CONFIG.PERIODO_LUZ_S)+CONFIG.PERIODO_LUZ_S)%CONFIG.PERIODO_LUZ_S;
+  const marcas=[
     [0,alvoFocoCentro],
-    [2.2,alvoFocoDireito],
-    [4.4,alvoFocoEsquerdo],
-    [6.6,alvoFocoDireito],
-    [8.8,alvoFocoEsquerdo],
-    [11,alvoFocoCentro],
-    [23,alvoFocoCentro],
-    [25.3,alvoFocoDireito],
-    [27.7,alvoFocoEsquerdo],
-    [30,alvoFocoCentro]
+    [1.5,alvoFocoOposto],
+    [4.5,alvoFocoEsquerdo],
+    [6,alvoFocoCentro]
   ];
   for(let i=1;i<marcas.length;i++){
-    if(t<=marcas[i][0]) {
+    if(fase<=marcas[i][0]){
       const [t0,p0]=marcas[i-1], [t1,p1]=marcas[i];
-      const u=Math.max(0,Math.min(1,(t-t0)/(t1-t0)));
+      const u=(fase-t0)/(t1-t0);
       const suave=u*u*(3-2*u);
       return new THREE.Vector3().lerpVectors(p0,p1,suave);
     }
@@ -563,7 +546,8 @@ function atualizar(t) {
   );
   camera.lookAt(centroCamara);
 
-  // Movimento do foco em ziguezague com pausa central; intensidade fixa.
+  // O foco repete a trajetoria a cada 6 s ate 12 s;
+  // depois mantem o alvo central, mesmo durante a orbita da camera.
   foco.target.position.copy(alvoFocoPorTempo(t));
   document.getElementById('tempo').textContent=t.toFixed(2);
 }
