@@ -75,7 +75,8 @@ const CONFIG = {
   PARAGEM_LUZ_S: 12.0,
   ABERTURA_FOCO_RAD: Math.PI / 12, // manter feixe estreito
   PENUMBRA_FOCO: 0.35,
-  LUZ_SPOT_MAX: 70.55, // intensidade afinada pelo aluno; sem animacao
+  LUZ_SPOT_MAX: 70.55, // intensidade ajustada pelo aluno: preservada
+  LUZ_PREENCHIMENTO: 10.0, // foco fixo, suave e largo para revelar o tabuleiro
   COR_FUNDO: 0x171b22
 };
 
