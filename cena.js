@@ -41,7 +41,7 @@ if (!window.THREE) throw new Error('three.min.js nao foi carregado');
 
 const CONFIG = {
   DURACAO_VIDEO_S: 30,
-  PERIODO_DISCO_S: 5.0,             // estimativa: 6 acionamentos em 30 s
+  PERIODO_DISCO_S: 5.105,             // estimativa: 6 acionamentos em 30 s
   PRIMEIRO_ACIONAMENTO_S: 2.400,      // HIPOTESE: entre 2 e 3 segundos
   DURACAO_ACIONAMENTO_S: 0.977,     // observacao: 540-550 ms
   PASSO_DISCO_GRAUS: 90,
@@ -158,7 +158,7 @@ function criarChao() {
 criarChao();
 
 // Plataforma castanha; o modelo segue a referencia mas dimensoes sao V1.
-caixa(10.2,.22,6.6,MAT.tabuleiro,-.9,0,0.45);
+caixa(10.2,.22,7,MAT.tabuleiro,-.9,0,.75);
 
 // Quatro postes de apoio em torno da plataforma.
 for (const [x, z] of [
@@ -191,7 +191,7 @@ function criarEngrenagem({
 
     // perfil trapezoidal / triangular do dente
     const pontos = [
-      [a + 0.00 * passo, raio],
+      [a + 0.0 * passo, raio],
       [a + 0.18 * passo, raio + profundidadeDente],
       [a + 0.50 * passo, raio + profundidadeDente],
       [a + 0.62 * passo, raio],
@@ -238,14 +238,14 @@ function criarEngrenagem({
 }
 // Posicoes iniciais e dimensoes sao aproximacoes para primeira comparacao.
 const esquerda=criarEngrenagem({
-  x:-3.99,z:-.70,raio:1.24,dentes:20,material:MAT.ouro,
+  x:-3.8,z:0.1,raio:1.3,dentes:20,material:MAT.ouro,
   y:CONFIG.Y_ENGRENAGEM_INFERIOR + CONFIG.ALTURA_ENGRENAGEM/2,
   espessura:CONFIG.ESPESSURA_ESQUERDA,
   pontoMat:MAT.vermelho,pontoAng:-.1,
   espessura: .15
 });
 const pequena=criarEngrenagem({
-  x:-1.8,z:-1.25,raio:.70,dentes:12,material:MAT.prata,
+  x:-1.9,z:-1.3,raio:.75,dentes:12,material:MAT.prata,
   y:CONFIG.Y_ENGRENAGEM_SUPERIOR,
   pontoMat:MAT.azul,pontoAng:.0, espessura: .15
 });
@@ -259,14 +259,14 @@ const superior=criarEngrenagem({
   pontoMat:MAT.verde,pontoAng:0.14,y:CONFIG.Y_ENGRENAGEM_SUPERIOR
 });
 const direita=criarEngrenagem({
-  x:1.275,z:2,raio:.75,dentes:16,material:MAT.cinza,
+  x:1.260,z:2.05,raio:.75,dentes:16,material:MAT.cinza,
   pontoMat:MAT.rosa,pontoAng:1.95
 });
 
 // Disco claro com quatro ranhuras abertas: sem faixas pretas por cima.
 // Conserva o ponto laranja e as suas coordenadas locais afinadas.
 const disco=new THREE.Group();
-disco.position.set(2.70,.40,1.80);
+disco.position.set(2.60,.35,2.1);
 scene.add(disco);
 
 function criarDiscoRanhurado(raio=0.88,espessura=0.20) {
@@ -327,9 +327,9 @@ direita.add(braço);
 cilindro(.055, .32, MAT.preto, 0, .26, 0, braço);   // haste fina
 cilindro(.095, .05, MAT.preto, 0, .445, 0, braço);  // cabeça tipo parafuso
 // Barra horizontal branca, mantida
-caixa(1.15, .045, .10, MAT.branco, -.40, .44, 0, braço);
+caixa(1.10, .045, .10, MAT.branco, -.40, .44, 0, braço);
 // Ponta branca dobrada para baixo, mantida
-cilindro(.055, .34, MAT.branco, -1, .295, 0, braço);
+cilindro(.055, .34, MAT.branco, -.95, .295, 0, braço);
 
 
 -// Pino condutor na extremidade
@@ -514,13 +514,13 @@ scene.add(focoGeral.target);
 // Nao participa no movimento do foco que percorre o mecanismo.
 const focoEsfera = new THREE.SpotLight(
   0xfff5e9,  // branco ligeiramente quente
-  18,        // intensidade moderada para evitar estourar a esfera
+  100,        // intensidade moderada para evitar estourar a esfera
   0,
   Math.PI / 7,
   0.65,
   1.0
 );
-focoEsfera.position.set(-3.3, 6.0, 5.4);
+focoEsfera.position.set(7.3, 6.0, -5.4);
 focoEsfera.target.position.copy(esfera.position);
 focoEsfera.castShadow = true;
 focoEsfera.shadow.mapSize.set(1024, 1024);
