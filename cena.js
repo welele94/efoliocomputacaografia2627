@@ -70,8 +70,8 @@ const CONFIG = {
   ALTURA_FINAL_CAMARA: 8.8,
   // BETA 3 - luz quente concentrada nas engrenagens centrais.
   PERIODO_LUZ_S: 18.0, // hipotese baseada em 0/5/10/15/20/25/29 s
-  LUZ_SPOT_MIN: 0.15,
-  LUZ_SPOT_MAX: 4.8,
+  LUZ_SPOT_MIN: 0.04,
+  LUZ_SPOT_MAX: 0.55, // foco discreto, sem queimar as engrenagens
   COR_FUNDO: 0x171b22
 };
 
@@ -429,12 +429,12 @@ const faixa=mesh(new THREE.PlaneGeometry(2.90,.22),
   new THREE.MeshBasicMaterial({map:gradTex}),quadro);
 faixa.position.set(0,-.78,.072);
 
-// BETA 3: iluminacao base mais suave + foco quente e periodico.
+// BETA 3: iluminacao global reduzida e equilibrada; foco periodico subtil.
 // O video mostra a engrenagem central muito iluminada em t~0 e 15-20,
 // e menos iluminada em t~5-10 e 25-29. Hipotese: ciclo ~18 segundos.
-const ambiente=new THREE.AmbientLight(0xffffff,.58);
+const ambiente=new THREE.AmbientLight(0xffffff,.48);
 scene.add(ambiente);
-const sol=new THREE.DirectionalLight(0xffedcf,1.35);
+const sol=new THREE.DirectionalLight(0xfff2e1,.85);
 sol.position.set(-3,10,5);
 sol.castShadow=true;
 sol.shadow.mapSize.set(2048,2048);
@@ -445,7 +445,7 @@ scene.add(sol);
 
 // Luz adicional que concentra brilho nas duas rodas douradas centrais.
 const foco=new THREE.SpotLight(
-  0xfff0ae,CONFIG.LUZ_SPOT_MAX,0,Math.PI/4.6,.78,1.0
+  0xfff3d9,CONFIG.LUZ_SPOT_MAX,0,Math.PI/3.2,.90,1.0
 );
 foco.position.set(-.75,5.4,-.35);
 foco.target.position.set(-.35,.08,-.25);
