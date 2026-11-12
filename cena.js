@@ -42,8 +42,8 @@ if (!window.THREE) throw new Error('three.min.js nao foi carregado');
 const CONFIG = {
   DURACAO_VIDEO_S: 30,
   PERIODO_DISCO_S: 5.0,             // estimativa: 6 acionamentos em 30 s
-  PRIMEIRO_ACIONAMENTO_S: 2.500,      // HIPOTESE: entre 2 e 3 segundos
-  DURACAO_ACIONAMENTO_S: 0.967,     // observacao: 540-550 ms
+  PRIMEIRO_ACIONAMENTO_S: 2.400,      // HIPOTESE: entre 2 e 3 segundos
+  DURACAO_ACIONAMENTO_S: 0.977,     // observacao: 540-550 ms
   PASSO_DISCO_GRAUS: 90,
   PERIODO_ESQUERDA_S: 10,
   // BETA 2: offsets iniciais aproximados do professor, medidos em horas
@@ -76,7 +76,7 @@ const CONFIG = {
   ABERTURA_FOCO_RAD: Math.PI / 8, // manter feixe estreito
   PENUMBRA_FOCO: 0.55,
   LUZ_SPOT_MAX: 70.55, // intensidade ajustada pelo aluno: preservada
-  LUZ_PREENCHIMENTO: 10.0, // foco fixo, suave e largo para revelar o tabuleiro
+  LUZ_PREENCHIMENTO: 8.0, // foco fixo, suave e largo para revelar o tabuleiro
   COR_FUNDO: 0x171b22
 };
 
@@ -237,14 +237,14 @@ function criarEngrenagem({
 }
 // Posicoes iniciais e dimensoes sao aproximacoes para primeira comparacao.
 const esquerda=criarEngrenagem({
-  x:-3.95,z:-.68,raio:1.24,dentes:20,material:MAT.ouro,
+  x:-3.99,z:-.70,raio:1.24,dentes:20,material:MAT.ouro,
   y:CONFIG.Y_ENGRENAGEM_INFERIOR + CONFIG.ALTURA_ENGRENAGEM/2,
   espessura:CONFIG.ESPESSURA_ESQUERDA,
   pontoMat:MAT.vermelho,pontoAng:-.1,
   espessura: .15
 });
 const pequena=criarEngrenagem({
-  x:-1.7,z:-1.25,raio:.70,dentes:12,material:MAT.prata,
+  x:-1.8,z:-1.25,raio:.70,dentes:12,material:MAT.prata,
   y:CONFIG.Y_ENGRENAGEM_SUPERIOR,
   pontoMat:MAT.azul,pontoAng:.0, espessura: .15
 });
@@ -258,14 +258,14 @@ const superior=criarEngrenagem({
   pontoMat:MAT.verde,pontoAng:0.14,y:CONFIG.Y_ENGRENAGEM_SUPERIOR
 });
 const direita=criarEngrenagem({
-  x:1.30,z:2.0,raio:.75,dentes:16,material:MAT.cinza,
+  x:1.275,z:2,raio:.75,dentes:16,material:MAT.cinza,
   pontoMat:MAT.rosa,pontoAng:1.95
 });
 
 // Disco claro com quatro ranhuras abertas: sem faixas pretas por cima.
 // Conserva o ponto laranja e as suas coordenadas locais afinadas.
 const disco=new THREE.Group();
-disco.position.set(2.80,.40,1.80);
+disco.position.set(2.70,.40,1.80);
 scene.add(disco);
 
 function criarDiscoRanhurado(raio=0.88,espessura=0.20) {
@@ -326,10 +326,12 @@ direita.add(braço);
 cilindro(.055, .32, MAT.preto, 0, .26, 0, braço);   // haste fina
 cilindro(.095, .05, MAT.preto, 0, .445, 0, braço);  // cabeça tipo parafuso
 // Barra horizontal branca, mantida
-caixa(1.22, .075, .10, MAT.branco, -.30, .54, 0, braço);
+caixa(1.15, .045, .10, MAT.branco, -.40, .44, 0, braço);
 // Ponta branca dobrada para baixo, mantida
-caixa(.10, .34, .11, MAT.branco, -.90, .40, 0, braço);
-// Pino condutor na extremidade
+cilindro(.055, .34, MAT.branco, -1, .295, 0, braço);
+
+
+-// Pino condutor na extremidade
 // mais fino e com uma pequena cabeça
 cilindro(.04, .11, MAT.preto, -1.15, .07, 0, braço);   // haste
 cilindro(.065, .03, MAT.preto, -1.15, .13, 0, braço);  // cabecinha
@@ -348,7 +350,7 @@ cilindro(.06,.28,MAT.preto,.91,.18,-.27,indicador);
 
 // Esfera branca frontal.
 const esfera=mesh(new THREE.SphereGeometry(.70,32,22),MAT.branco);
-esfera.position.set(-5.95,.95,2);
+esfera.position.set(-5.95,.85,2);
 
 // Painel: nuvens procedurais por ruido de valor em multiplas escalas (fBm).
 // Gerado apenas por codigo, sem bibliotecas externas ou imagens do video.
@@ -488,16 +490,19 @@ foco.shadow.bias=-.00015;
 
 const focoGeral = new THREE.SpotLight(
   0xffe2ad,   // neutro
-  14,         // intensidade moderada
+  6,         // intensidade moderada
   0,          // sem limite de distância
-  Math.PI / 2.6, // bem mais aberto
+  Math.PI / 1.6, // bem mais aberto
   0.95,       // bordas muito suaves
   1.0
 );
 
-focoGeral.position.set(5.8, 7.5, 4.8);   // mesma zona geral do foco principal
-focoGeral.target.position.set(0, 0.05, 0.2); // centro da plataforma
-focoGeral.castShadow = false;
+focoGeral.position.set(15.8, 7.5, 4.8);   // mesma zona geral do foco principal
+focoGeral.target.position.set(-15, .05, 10.2); // centro da plataforma
+focoGeral.castShadow = true;
+focoGeral.shadow.mapSize.set(2048, 2048);
+focoGeral.shadow.bias = -0.00015;
+focoGeral.shadow.radius = 3;
 
 scene.add(focoGeral);
 scene.add(focoGeral.target);
