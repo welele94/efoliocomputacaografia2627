@@ -76,6 +76,7 @@ const CONFIG = {
   ABERTURA_FOCO_RAD: Math.PI / 12, // 15 graus de semiabertura
   PENUMBRA_FOCO: 0.35,
   LUZ_SPOT_MAX: 70.55, // intensidade ajustada pelo aluno: preservada
+  LUZ_PREENCHIMENTO: 10.0, // foco fixo, suave e largo para revelar o tabuleiro
   COR_FUNDO: 0x171b22
 };
 
@@ -458,6 +459,22 @@ scene.add(foco.target);
 foco.castShadow=true;
 foco.shadow.mapSize.set(1024,1024);
 foco.shadow.bias=-.00015;
+
+// Segundo foco: preenchimento suave e estatico, independente do foco movel.
+// Aponta ao centro da plataforma, sem sombras adicionais demasiado marcadas.
+const focoSuave = new THREE.SpotLight(
+  0xffedd0,
+  CONFIG.LUZ_PREENCHIMENTO,
+  0,
+  Math.PI / 3.2, // abertura larga
+  0.95,          // bordas difusas
+  1.0
+);
+focoSuave.position.set(2.5, 7.5, 5.5);
+focoSuave.target.position.set(0, 0.05, 0.45);
+focoSuave.castShadow = false;
+scene.add(focoSuave);
+scene.add(focoSuave.target);
 
 // Alvos fixos no mundo: nao mudam quando a camera orbita.
 // Extremos estimados a partir do enquadramento do video (a afinar).
