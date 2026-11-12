@@ -4,6 +4,43 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>E-Fólio A — Computação Gráfica | Protótipo V1</title>
+  <!--
+  E-FOLIO A — NOTAS DE MEDICAO, OBSERVACAO E LIMITACOES
+
+  Referencia:
+  - Video fornecido: 1280 x 720, 30 fps e duracao de 30 segundos.
+  - Analise visual de fotogramas do video, comparando o posicionamento
+    dos componentes, as marcas coloridas e os movimentos ao longo do tempo.
+
+  Estimativas utilizadas na modelacao:
+  - Engrenagem esquerda (marca vermelha): 20 dentes no modelo;
+    a contagem visual inicial da referencia sugeria cerca de 21.
+  - Engrenagem cinzenta pequena (marca azul): 12 dentes.
+  - Engrenagem dourada grande: aproximadamente 25 dentes.
+  - Engrenagem dourada superior (marca verde): 16 dentes.
+  - Engrenagem cinzenta direita (marca rosa): aproximadamente 16 dentes.
+  - Disco claro: quatro ranhuras e avancos intermitentes de cerca de 90 graus.
+  - Posicoes, raios, velocidades e fases ajustados por comparacao visual;
+    nao foram medidos diretamente no espaco tridimensional original.
+
+  Dificuldades e aspetos nao totalmente reproduzidos:
+  - A geometria dos dentes foi aproximada por perfis trapezoidais gerados
+    por codigo. Uma profundidade comum nao garante larguras fisicas iguais
+    em engrenagens com diferentes raios e numeros de dentes.
+  - Embora a aparencia e o movimento geral se aproximem do video,
+    nao foi possivel confirmar o perfil exato de todos os dentes nem
+    garantir encaixe mecanico perfeito em todos os instantes.
+  - A sincronizacao de duas engrenagens foi melhorada pela relacao 25:16;
+    os restantes periodos de rotacao continuam a ser aproximacoes visuais.
+  - A iluminacao, as sombras, a textura procedural do painel e a orbita
+    da camara foram ajustadas por observacao, nao por dados originais da cena.
+
+  Decisao de modelacao:
+  - Preservou-se o perfil trapezoidal inicial dos dentes para manter
+    a aparencia global e evitar alteracoes extensas ao mecanismo.
+  - Estas diferencas sao assumidas como limitacoes da reconstrucao,
+    e nao como uma correspondencia geometrica exata ao original.
+  -->
   <style>
     html,body { margin:0; width:100%; height:100%; overflow:hidden; background:#111318; }
     canvas { display:block; width:100%; height:100%; }
