@@ -102,6 +102,7 @@ const MAT = {
   preto: new THREE.MeshStandardMaterial({color:0x161b1c, roughness:0.8}),
   poste: new THREE.MeshStandardMaterial({color:0xb6a17b, roughness:0.71}),
   vermelho: new THREE.MeshStandardMaterial({color:0xff2928, emissive:0x3a0000}),
+  vermelhoPeca: new THREE.MeshStandardMaterial({color:0xe95a4c, roughness:0.55}),
   azul: new THREE.MeshStandardMaterial({color:0x00a6ff}),
   verde: new THREE.MeshStandardMaterial({color:0x26df86}),
   rosa: new THREE.MeshStandardMaterial({color:0xe75bd0}),
@@ -346,15 +347,22 @@ braço.rotation.y = Math.PI / 1.8;
 
 
 
-// Regua branca/vermelha: o grupo tem origem no proprio pino preto,
-// nao no centro da engrenagem. Assim roda sobre o seu eixo sem deslizar.
+// Regua branca/vermelha inspirada na referencia do professor.
+// O pivô fica diretamente sobre a marca vermelha da engrenagem; o grupo
+// gira sobre esse pino, independentemente da rotacao da engrenagem.
 const indicador=new THREE.Group();
-indicador.position.set(.91, 0, -.27);
+const marcaVermelha=esquerda.children.find(obj=>obj.material===MAT.vermelho);
+if (!marcaVermelha) throw new Error('Marca vermelha da engrenagem nao encontrada');
+indicador.position.set(marcaVermelha.position.x,0,marcaVermelha.position.z);
 esquerda.add(indicador);
-caixa(.71,.07,.22,MAT.branco,-.31,.29,0,indicador);
-caixa(.22,.078,.22,MAT.vermelho,-.05,.33,0,indicador);
-caixa(.18,.08,.22,MAT.ouroClaro,-.25,.33,0,indicador);
-cilindro(.06,.28,MAT.preto,0,.18,0,indicador);
+// Secao branca longa (a esquerda da uniao com o pino).
+caixa(.61,.065,.215,MAT.branco,-.30,.325,0,indicador);
+// Base dourada, parcialmente visivel por baixo da secao vermelha e na ponta.
+caixa(.51,.065,.22,MAT.ouro,.28,.295,0,indicador);
+// Secao vermelho-coral com comprimento proximo ao da secao branca.
+caixa(.47,.075,.22,MAT.vermelhoPeca,.23,.345,0,indicador);
+// Pino preto fino, por baixo da uniao das duas cores, ate a marca vermelha.
+cilindro(.04,.22,MAT.preto,0,.205,0,indicador);
 
 // Esfera branca frontal.
 const esfera=mesh(new THREE.SphereGeometry(.70,32,22),MAT.esfera);
