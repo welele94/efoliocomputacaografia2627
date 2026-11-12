@@ -332,7 +332,7 @@ cilindro(.06,.28,MAT.preto,.91,.18,-.27,indicador);
 
 // Esfera branca frontal.
 const esfera=mesh(new THREE.SphereGeometry(.85,32,22),MAT.branco);
-esfera.position.set(-5.45,.65,3.50);
+esfera.position.set(-5.45,.95,2);
 
 // Painel: nuvens procedurais por ruido de valor em multiplas escalas (fBm).
 // Gerado apenas por codigo, sem bibliotecas externas ou imagens do video.
@@ -392,7 +392,7 @@ function criarTexturaPainel() {
   return textura;
 }
 const quadro=new THREE.Group();
-quadro.position.set(-1.8,2.28,-3.64);
+quadro.position.set(-1.8,1.0,-3.64);
 quadro.rotation.y=-.07;
 scene.add(quadro);
 
