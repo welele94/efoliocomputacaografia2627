@@ -73,8 +73,8 @@ const CONFIG = {
   // extremo oposto t=1.5 e esquerda/esfera t=4.5.
   PERIODO_LUZ_S: 6.0,
   PARAGEM_LUZ_S: 12.0,
-  ABERTURA_FOCO_RAD: Math.PI / 12, // manter feixe estreito
-  PENUMBRA_FOCO: 0.35,
+  ABERTURA_FOCO_RAD: Math.PI / 8, // manter feixe estreito
+  PENUMBRA_FOCO: 0.55,
   LUZ_SPOT_MAX: 70.55, // intensidade ajustada pelo aluno: preservada
   LUZ_PREENCHIMENTO: 10.0, // foco fixo, suave e largo para revelar o tabuleiro
   COR_FUNDO: 0x171b22
@@ -82,7 +82,7 @@ const CONFIG = {
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(CONFIG.COR_FUNDO);
-const camera = new THREE.PerspectiveCamera(63, innerWidth / innerHeight, 0.1, 140);
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 5, 140);
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
@@ -157,13 +157,16 @@ function criarChao() {
 criarChao();
 
 // Plataforma castanha; o modelo segue a referencia mas dimensoes sao V1.
-caixa(11.2,.22,6.6,MAT.tabuleiro,0,0,0.45);
+caixa(10.2,.22,6.6,MAT.tabuleiro,-.9,0,0.45);
 
 // Quatro postes de apoio em torno da plataforma.
-for(const [x,z] of [[-6,-2.6],[6,-2.6],[-6,3.35],[6,3.35]]){
-  cilindro(.13,1.50,MAT.poste,x,0.64,z);
+for (const [x, z] of [
+  [-6, -2.6],
+  [ 4.5, -2],
+  [ 5,  1.0]
+]) {
+  cilindro(.15, 1.50, MAT.poste, x, 0.64, z);
 }
-
 // Engrenagens: perfil poligonal com dentes externos, extrudido em altura.
 // O eixo de rotacao e Y (Three.js).
 function criarEngrenagem({
@@ -251,11 +254,11 @@ const grande=criarEngrenagem({
   pontoMat:null
 });
 const superior=criarEngrenagem({
-  x:-.20,z:-.18,raio:.98,dentes:16,material:MAT.ouroClaro,
+  x:-.20,z:-.18,raio:.90,dentes:16,material:MAT.ouroClaro,
   pontoMat:MAT.verde,pontoAng:0.14,y:CONFIG.Y_ENGRENAGEM_SUPERIOR
 });
 const direita=criarEngrenagem({
-  x:1.30,z:2.0,raio:.78,dentes:16,material:MAT.cinza,
+  x:1.30,z:2.0,raio:.75,dentes:16,material:MAT.cinza,
   pontoMat:MAT.rosa,pontoAng:1.95
 });
 
@@ -344,8 +347,8 @@ caixa(.18,.08,.22,MAT.ouroClaro,.66,.33,-.27,indicador);
 cilindro(.06,.28,MAT.preto,.91,.18,-.27,indicador);
 
 // Esfera branca frontal.
-const esfera=mesh(new THREE.SphereGeometry(.85,32,22),MAT.branco);
-esfera.position.set(-5.45,.95,2);
+const esfera=mesh(new THREE.SphereGeometry(.70,32,22),MAT.branco);
+esfera.position.set(-5.95,.95,2);
 
 // Painel: nuvens procedurais por ruido de valor em multiplas escalas (fBm).
 // Gerado apenas por codigo, sem bibliotecas externas ou imagens do video.
@@ -449,7 +452,7 @@ scene.add(sol);
 
 // Luz principal: cor neutra; intensidade e posicao da fonte fixas.
 const foco=new THREE.SpotLight(
-  0xffffff,CONFIG.LUZ_SPOT_MAX,0,
+  0xffe2ad,CONFIG.LUZ_SPOT_MAX,0,
   CONFIG.ABERTURA_FOCO_RAD,CONFIG.PENUMBRA_FOCO,1.0
 );
 foco.position.set(7, 8, -4);
@@ -460,6 +463,22 @@ foco.castShadow=true;
 foco.shadow.mapSize.set(1024,1024);
 foco.shadow.bias=-.00015;
 
+
+const focoGeral = new THREE.SpotLight(
+  0xffe2ad,   // neutro
+  14,         // intensidade moderada
+  0,          // sem limite de distância
+  Math.PI / 2.6, // bem mais aberto
+  0.95,       // bordas muito suaves
+  1.0
+);
+
+focoGeral.position.set(5.8, 7.5, 4.8);   // mesma zona geral do foco principal
+focoGeral.target.position.set(0, 0.05, 0.2); // centro da plataforma
+focoGeral.castShadow = false;
+
+scene.add(focoGeral);
+scene.add(focoGeral.target);
 // O foco secundario quente foi removido: a luz de preenchimento
 // fica a cargo da AmbientLight fria e fraca, sem outro feixe central.
 
@@ -511,8 +530,8 @@ function anguloDisco(t) {
 
 // Camera: aproximada ao enquadramento inicial do original.
 // Orbita apenas depois de t~15 s, sem depender da taxa de fotogramas.
-const origemCamara=new THREE.Vector3(-9.1,7.0,8.2);
-const centroCamara=new THREE.Vector3(-.6,.45,.1);
+const origemCamara=new THREE.Vector3(-5.1,6.0,7.2);
+const centroCamara=new THREE.Vector3(-.96,-.5,-.1);
 const raioCamara=Math.hypot(origemCamara.x-centroCamara.x,origemCamara.z-centroCamara.z);
 const angCamara=Math.atan2(origemCamara.x-centroCamara.x,origemCamara.z-centroCamara.z);
 
