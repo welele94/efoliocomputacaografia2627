@@ -82,7 +82,7 @@ const CONFIG = {
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(CONFIG.COR_FUNDO);
-const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 5, 140);
+const camera = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 5, 140);
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
@@ -141,16 +141,16 @@ function criarChao() {
   for(let j=0;j<n;j++) for(let i=0;i<n;i++){
     ctx.fillStyle=(i+j)%2 ? '#505259' : '#34363d';
     ctx.fillRect(i*p,j*p,p,p);
-    ctx.strokeStyle='#85878e';
-    ctx.lineWidth=1.6;
+    ctx.strokeStyle='#fff';
+    ctx.lineWidth=0.4;
     ctx.strokeRect(i*p+.7,j*p+.7,p-1.4,p-1.4);
   }
   const tex=new THREE.CanvasTexture(c);
   tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
-  tex.repeat.set(12,12);
+  tex.repeat.set(10,10);
   tex.colorSpace=THREE.SRGBColorSpace;
   const m=new THREE.MeshStandardMaterial({map:tex,roughness:0.98});
-  const chão=mesh(new THREE.PlaneGeometry(80,80),m);
+  const chão=mesh(new THREE.PlaneGeometry(40,40),m);
   chão.rotation.x=-Math.PI/2;
   chão.position.y=-0.18;
 }
@@ -382,25 +382,46 @@ function criarTexturaPainel() {
     for(let i=0;i<6;i++) {
       soma+=amplitude*ruido(x*frequencia,y*frequencia);
       total+=amplitude;
-      frequencia*=2.04;
-      amplitude*=0.53;
+      frequencia*=3.04;
+      amplitude*=0.4;
     }
     return soma/total;
   }
-  for(let y=0;y<altura;y++) for(let x=0;x<largura;x++) {
-    const nx=x/largura*5.5, ny=y/altura*2.9;
-    const macro=nuvens(nx,ny);
-    const detalhe=ruido(nx*13,ny*13);
-    const densidade=Math.max(0,Math.min(1,(macro-0.37)*3.6 + (detalhe-.5)*.13));
-    const valor=densidade*densidade*(3-2*densidade);
-    // Azul profundo nas zonas abertas, amarelo/creme nas nuvens.
-    const index=(y*largura+x)*4;
-    img.data[index]=Math.round(23+(239-23)*valor);
-    img.data[index+1]=Math.round(76+(192-76)*valor);
-    img.data[index+2]=Math.round(106+(113-106)*valor);
-    img.data[index+3]=255;
+for (let y = 0; y < altura; y++) {
+  for (let x = 0; x < largura; x++) {
+    const u = x / largura;
+    const v = y / altura;
+
+    // Estrutura principal das nuvens
+    const macro = nuvens(u * 7.0, v * 3.6);
+
+    // Variação intermédia
+    const medio = ruido(u * 12.0, v * 12.0);
+
+    // Grão ligeiro, só para quebrar uniformidade
+    const fino = ruido(u * 24.0, v * 24.0);
+
+    let densidade =
+      (macro - 0.48) * 2.4 +
+      (medio - 0.50) * 0.65 +
+      (fino  - 0.50) * 0.12 +
+      0.52;
+
+    densidade = Math.max(0, Math.min(1, densidade));
+
+    const valor = densidade * densidade * (3 - 2 * densidade);
+
+    const index = (y * largura + x) * 4;
+
+    // Fundo azul -> nuvens creme/amareladas
+    img.data[index]     = Math.round(28  + (236 - 28)  * valor);
+    img.data[index + 1] = Math.round(82  + (206 - 82)  * valor);
+    img.data[index + 2] = Math.round(122 + (148 - 122) * valor);
+    img.data[index + 3] = 255;
   }
-  ctx.putImageData(img,0,0);
+}
+
+ctx.putImageData(img, 0, 0);
   const textura=new THREE.CanvasTexture(canvas);
   textura.colorSpace=THREE.SRGBColorSpace;
   textura.minFilter=THREE.LinearFilter;
@@ -408,14 +429,15 @@ function criarTexturaPainel() {
   return textura;
 }
 const quadro=new THREE.Group();
-quadro.position.set(-1.8,1.0,-3.64);
-quadro.rotation.y=-.07;
+quadro.position.set(0,1.1,-4.64);
+quadro.rotation.y=-0;
+quadro.scale.set(1.15,1.25,1.5);
 scene.add(quadro);
 
 // Estrutura discreta do monitor, ligada ao mesmo grupo do ecra.
 // O bordo inferior do quadro esta a Y=1.19; o suporte prolonga-se ate ao chao.
 const suporteMaterial=new THREE.MeshStandardMaterial({
-  color:0x343637,roughness:.78,metalness:.16
+  color:0x343637,roughness:.78,metalness:80.16
 });
 caixa(.16,1.40,.18,suporteMaterial,0,-1.76,-.065,quadro);
 caixa(.90,.075,.55,suporteMaterial,0,-2.49,-.02,quadro);
@@ -530,8 +552,8 @@ function anguloDisco(t) {
 
 // Camera: aproximada ao enquadramento inicial do original.
 // Orbita apenas depois de t~15 s, sem depender da taxa de fotogramas.
-const origemCamara=new THREE.Vector3(-5.1,6.0,7.2);
-const centroCamara=new THREE.Vector3(-.96,-.5,-.1);
+const origemCamara=new THREE.Vector3(-5.10, 8.00, 9.70);
+const centroCamara=new THREE.Vector3(-1.46, 0.50, -0.10); 
 // O modo debug ajusta estes dois vetores diretamente em passos de 0.5.
 // O raio e o angulo sao recalculados para os controlos tambem funcionarem
 // quando se testa a cena num instante posterior ao inicio da orbita.
