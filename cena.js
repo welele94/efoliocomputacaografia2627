@@ -437,7 +437,7 @@ scene.add(quadro);
 // Estrutura discreta do monitor, ligada ao mesmo grupo do ecra.
 // O bordo inferior do quadro esta a Y=1.19; o suporte prolonga-se ate ao chao.
 const suporteMaterial=new THREE.MeshStandardMaterial({
-  color:0x343637,roughness:.78,metalness:80.16
+  color:0x343637,roughness:.78,metalness:0.16
 });
 caixa(.16,1.40,.18,suporteMaterial,0,-1.76,-.065,quadro);
 caixa(.90,.075,.55,suporteMaterial,0,-2.49,-.02,quadro);
