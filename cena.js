@@ -321,39 +321,75 @@ cilindro(.06,.28,MAT.preto,.91,.18,-.27,indicador);
 const esfera=mesh(new THREE.SphereGeometry(.85,32,22),MAT.branco);
 esfera.position.set(-5.45,.65,3.50);
 
-// Painel vertical com padrao de nuvens procedural (nao e fotograma do video).
+// Painel: nuvens procedurais por ruido de valor em multiplas escalas (fBm).
+// Gerado apenas por codigo, sem bibliotecas externas ou imagens do video.
 function criarTexturaPainel() {
-  const c=document.createElement('canvas');
-  c.width=256;c.height=128;
-  const ctx=c.getContext('2d');
-  const im=ctx.createImageData(c.width,c.height);
-  let seed=79;
-  function rnd(){seed=(1664525*seed+1013904223)>>>0;return seed/4294967296;}
-  const pontos=Array.from({length:43},()=>({
-    x:rnd()*256,y:rnd()*128,r:15+rnd()*52,a:.3+rnd()*.7
-  }));
-  for(let y=0;y<128;y++)for(let x=0;x<256;x++){
-    let v=0;
-    for(const q of pontos){
-      const dx=x-q.x,dy=y-q.y;
-      v+=q.a*Math.exp(-(dx*dx+dy*dy)/(q.r*q.r));
-    }
-    const mix=Math.max(0,Math.min(1,(v-.9)/1.55));
-    const off=(y*256+x)*4;
-    im.data[off]=Math.round(22+219*mix);
-    im.data[off+1]=Math.round(67+127*mix);
-    im.data[off+2]=Math.round(88+47*mix);
-    im.data[off+3]=255;
+  const largura=384, altura=192;
+  const canvas=document.createElement('canvas');
+  canvas.width=largura;
+  canvas.height=altura;
+  const ctx=canvas.getContext('2d');
+  const img=ctx.createImageData(largura,altura);
+
+  // Hash deterministico de coordenadas inteiras.
+  function aleatorioGrade(x,y) {
+    let n=Math.imul(x,374761393)+Math.imul(y,668265263)+79;
+    n=Math.imul(n^(n>>>13),1274126177);
+    return ((n^(n>>>16))>>>0)/4294967295;
   }
-  ctx.putImageData(im,0,0);
-  const t=new THREE.CanvasTexture(c);
-  t.colorSpace=THREE.SRGBColorSpace;
-  return t;
+  function ruido(x,y) {
+    const ix=Math.floor(x), iy=Math.floor(y);
+    const fx=x-ix, fy=y-iy;
+    const u=fx*fx*(3-2*fx), v=fy*fy*(3-2*fy);
+    const a=aleatorioGrade(ix,iy);
+    const b=aleatorioGrade(ix+1,iy);
+    const c=aleatorioGrade(ix,iy+1);
+    const d=aleatorioGrade(ix+1,iy+1);
+    return (a+(b-a)*u)*(1-v)+(c+(d-c)*u)*v;
+  }
+  // Nuvens com estrutura larga + pormenores pequenos.
+  function nuvens(x,y) {
+    let soma=0, amplitude=1, frequencia=1, total=0;
+    for(let i=0;i<6;i++) {
+      soma+=amplitude*ruido(x*frequencia,y*frequencia);
+      total+=amplitude;
+      frequencia*=2.04;
+      amplitude*=0.53;
+    }
+    return soma/total;
+  }
+  for(let y=0;y<altura;y++) for(let x=0;x<largura;x++) {
+    const nx=x/largura*5.5, ny=y/altura*2.9;
+    const macro=nuvens(nx,ny);
+    const detalhe=ruido(nx*13,ny*13);
+    const densidade=Math.max(0,Math.min(1,(macro-0.37)*3.6 + (detalhe-.5)*.13));
+    const valor=densidade*densidade*(3-2*densidade);
+    // Azul profundo nas zonas abertas, amarelo/creme nas nuvens.
+    const index=(y*largura+x)*4;
+    img.data[index]=Math.round(23+(239-23)*valor);
+    img.data[index+1]=Math.round(76+(192-76)*valor);
+    img.data[index+2]=Math.round(106+(113-106)*valor);
+    img.data[index+3]=255;
+  }
+  ctx.putImageData(img,0,0);
+  const textura=new THREE.CanvasTexture(canvas);
+  textura.colorSpace=THREE.SRGBColorSpace;
+  textura.minFilter=THREE.LinearFilter;
+  textura.magFilter=THREE.LinearFilter;
+  return textura;
 }
 const quadro=new THREE.Group();
 quadro.position.set(-1.8,2.28,-3.64);
 quadro.rotation.y=-.07;
 scene.add(quadro);
+
+// Estrutura discreta do monitor, ligada ao mesmo grupo do ecra.
+// O bordo inferior do quadro esta a Y=1.19; o suporte prolonga-se ate ao chao.
+const suporteMaterial=new THREE.MeshStandardMaterial({
+  color:0x343637,roughness:.78,metalness:.16
+});
+caixa(.16,1.40,.18,suporteMaterial,0,-1.76,-.065,quadro);
+caixa(.90,.075,.55,suporteMaterial,0,-2.49,-.02,quadro);
 caixa(3.5,2.18,.12,MAT.preto,0,0,0,quadro);
 const imagem=mesh(new THREE.PlaneGeometry(3.11,1.35),
   new THREE.MeshBasicMaterial({map:criarTexturaPainel()}),quadro);
