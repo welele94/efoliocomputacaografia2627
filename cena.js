@@ -498,7 +498,7 @@ const focoGeral = new THREE.SpotLight(
   1.0
 );
 
-// Luz fixa da direita: iluminacao predominante da esfera.
+// Luz fixa da direita: preenchimento geral da cena.
 focoGeral.position.set(10.5, 8.8, 5.2);
 focoGeral.target.position.set(-1.2, 0.05, 0.8);
 focoGeral.castShadow = true;
@@ -508,6 +508,26 @@ focoGeral.shadow.radius = 4;
 
 scene.add(focoGeral);
 scene.add(focoGeral.target);
+
+// Foco fixo dedicado a esfera: vem de cima e da direita, produzindo
+// um unico realce dominante e uma sombra projetada para a esquerda.
+// Nao participa no movimento do foco que percorre o mecanismo.
+const focoEsfera = new THREE.SpotLight(
+  0xfff5e9,  // branco ligeiramente quente
+  18,        // intensidade moderada para evitar estourar a esfera
+  0,
+  Math.PI / 7,
+  0.65,
+  1.0
+);
+focoEsfera.position.set(-3.3, 6.0, 5.4);
+focoEsfera.target.position.copy(esfera.position);
+focoEsfera.castShadow = true;
+focoEsfera.shadow.mapSize.set(1024, 1024);
+focoEsfera.shadow.bias = -0.00015;
+focoEsfera.shadow.radius = 3;
+scene.add(focoEsfera);
+scene.add(focoEsfera.target);
 // O foco secundario quente foi removido: a luz de preenchimento
 // fica a cargo da AmbientLight fria e fraca, sem outro feixe central.
 
