@@ -68,11 +68,13 @@ const CONFIG = {
   FIM_ORBITA_CAMARA_S: 30.0,
   ARCO_CAMARA_GRAUS: 105, // aproximacao visual, por confirmar com frames
   ALTURA_FINAL_CAMARA: 8.8,
-  // BETA 3: luz quente constante, apenas o alvo se desloca.
-  // 0-11 s: diagonal ate ao conjunto central; 11-23 s: fixa;
-  // 23-30 s: continua a mesma diagonal. Posicoes aproximadas.
+  // BETA 3: feixe estreito percorre diagonal repetidamente.
+  // 0-11 s: centro -> direito -> esquerdo -> direito -> esquerdo -> centro.
+  // 11-23 s: centro fixo; 23-30 s: movimento retomado.
   INICIO_PAUSA_FOCO_S: 11,
   FIM_PAUSA_FOCO_S: 23,
+  ABERTURA_FOCO_RAD: Math.PI / 12, // 15 graus de semiabertura
+  PENUMBRA_FOCO: 0.35,
   LUZ_SPOT_MAX: 70.55, // intensidade ajustada pelo aluno: preservada
   COR_FUNDO: 0x171b22
 };
@@ -446,7 +448,8 @@ scene.add(sol);
 
 // Luz adicional que concentra brilho nas duas rodas douradas centrais.
 const foco=new THREE.SpotLight(
-  0xfff3d9,CONFIG.LUZ_SPOT_MAX,0,Math.PI/3.2,.90,1.0
+  0xfff3d9,CONFIG.LUZ_SPOT_MAX,0,
+  CONFIG.ABERTURA_FOCO_RAD,CONFIG.PENUMBRA_FOCO,1.0
 );
 foco.position.set(7, 8, -4);
 foco.target.position.set(0, 0, 0);
@@ -456,12 +459,37 @@ foco.castShadow=true;
 foco.shadow.mapSize.set(1024,1024);
 foco.shadow.bias=-.00015;
 
-// Trajetoria do foco no plano do tabuleiro. Mantemos o ponto central
-// exatamente sobre o eixo do conjunto dourado do ponto verde.
-// Os extremos sao estimativas visuais e podem ser afinados depois.
-const alvoFocoInicial = new THREE.Vector3(-4.8,0.1,2.6);
-const alvoFocoVerde = new THREE.Vector3(superior.position.x,0.1,superior.position.z);
-const alvoFocoFinal = new THREE.Vector3(2.2,0.1,-1.3);
+// Alvos fixos no mundo: nao mudam quando a camera orbita.
+// Extremos estimados a partir do enquadramento do video (a afinar).
+const alvoFocoCentro = new THREE.Vector3(superior.position.x,0.1,superior.position.z);
+const alvoFocoDireito = new THREE.Vector3(2.2,0.1,-1.3);
+const alvoFocoEsquerdo = new THREE.Vector3(-4.1,0.1,2.1);
+
+// Interpolacao de pontos-chave. Deterministica e sem saltos nos limites.
+// Smoothstep faz o feixe abrandar nas extremidades de cada passagem.
+function alvoFocoPorTempo(t) {
+  const marcas = [
+    [0,alvoFocoCentro],
+    [2.2,alvoFocoDireito],
+    [4.4,alvoFocoEsquerdo],
+    [6.6,alvoFocoDireito],
+    [8.8,alvoFocoEsquerdo],
+    [11,alvoFocoCentro],
+    [23,alvoFocoCentro],
+    [25.3,alvoFocoDireito],
+    [27.7,alvoFocoEsquerdo],
+    [30,alvoFocoCentro]
+  ];
+  for(let i=1;i<marcas.length;i++){
+    if(t<=marcas[i][0]) {
+      const [t0,p0]=marcas[i-1], [t1,p1]=marcas[i];
+      const u=Math.max(0,Math.min(1,(t-t0)/(t1-t0)));
+      const suave=u*u*(3-2*u);
+      return new THREE.Vector3().lerpVectors(p0,p1,suave);
+    }
+  }
+  return alvoFocoCentro.clone();
+}
 
 function rad(graus){ return graus*Math.PI/180; }
 function suavizar(p){ return p*p*(3-2*p); }
@@ -518,21 +546,8 @@ function atualizar(t) {
   );
   camera.lookAt(centroCamara);
 
-  // Movimento espacial do foco, sem oscilacao na intensidade.
-  // As duas transicoes sao continuas nos instantes 11 s e 23 s.
-  const tParagem=CONFIG.INICIO_PAUSA_FOCO_S;
-  const tRetoma=CONFIG.FIM_PAUSA_FOCO_S;
-  if(t<tParagem) {
-    const u=t/tParagem;
-    const suave=u*u*(3-2*u);
-    foco.target.position.lerpVectors(alvoFocoInicial,alvoFocoVerde,suave);
-  } else if(t<tRetoma) {
-    foco.target.position.copy(alvoFocoVerde);
-  } else {
-    const u=Math.min(1,(t-tRetoma)/(CONFIG.DURACAO_VIDEO_S-tRetoma));
-    const suave=u*u*(3-2*u);
-    foco.target.position.lerpVectors(alvoFocoVerde,alvoFocoFinal,suave);
-  }
+  // Movimento do foco em ziguezague com pausa central; intensidade fixa.
+  foco.target.position.copy(alvoFocoPorTempo(t));
   document.getElementById('tempo').textContent=t.toFixed(2);
 }
 
