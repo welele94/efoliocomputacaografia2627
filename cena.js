@@ -46,6 +46,7 @@ const CONFIG = {
   DURACAO_ACIONAMENTO_S: 0.977,     // observacao: 540-550 ms
   PASSO_DISCO_GRAUS: 90,
   PERIODO_ESQUERDA_S: 10,
+  PERIODO_INDICADOR_S: 5.0, // rotacao propria da regua branca/vermelha, em segundos
   // BETA 2: offsets iniciais aproximados do professor, medidos em horas
   // de relogio no ecra. Camera inclinada: verificar visualmente em t=0.
   // Negativo em rotation.y corresponde aproximadamente a horario no ecra.
@@ -210,6 +211,11 @@ function criarEngrenagem({
 
   shape.closePath();
 
+  // Furo real no eixo de cada engrenagem (nao um ponto preto sobre o topo).
+  const furoEixo = new THREE.Path();
+  furoEixo.absarc(0, 0, 0.085, 0, Math.PI * 2, true);
+  shape.holes.push(furoEixo);
+
   const geom = new THREE.ExtrudeGeometry(shape, {
     depth: altura,
     bevelEnabled: false,
@@ -222,7 +228,6 @@ function criarEngrenagem({
   gear.position.y = -altura / 2;
 
   const topo = altura / 2;
-  cilindro(.055, .10, MAT.preto, 0, topo + .05, 0, g);
 
   if (pontoMat) {
     ponto(
@@ -341,13 +346,15 @@ braço.rotation.y = Math.PI / 1.8;
 
 
 
-// Regua com apontador multicolorido na engrenagem dourada esquerda.
+// Regua branca/vermelha: o grupo tem origem no proprio pino preto,
+// nao no centro da engrenagem. Assim roda sobre o seu eixo sem deslizar.
 const indicador=new THREE.Group();
+indicador.position.set(.91, 0, -.27);
 esquerda.add(indicador);
-caixa(.71,.07,.22,MAT.branco,.60,.29,-.27,indicador);
-caixa(.22,.078,.22,MAT.vermelho,.86,.33,-.27,indicador);
-caixa(.18,.08,.22,MAT.ouroClaro,.66,.33,-.27,indicador);
-cilindro(.06,.28,MAT.preto,.91,.18,-.27,indicador);
+caixa(.71,.07,.22,MAT.branco,-.31,.29,0,indicador);
+caixa(.22,.078,.22,MAT.vermelho,-.05,.33,0,indicador);
+caixa(.18,.08,.22,MAT.ouroClaro,-.25,.33,0,indicador);
+cilindro(.06,.28,MAT.preto,0,.18,0,indicador);
 
 // Esfera branca frontal.
 const esfera=mesh(new THREE.SphereGeometry(.70,32,22),MAT.esfera);
@@ -589,6 +596,8 @@ function atualizar(t) {
   // Modo video: periodos observados (provisorios). Modo mecanico:
   // dentes 20:12 / 12:16 / 25:16 para testar relacoes de contacto.
   esquerda.rotation.y=CONFIG.FASE_ESQUERDA_RAD-2*Math.PI*t/CONFIG.PERIODO_ESQUERDA_S;
+  // Movimento adicional, independente, da regua sobre o seu pino exterior.
+  indicador.rotation.y=2*Math.PI*t/CONFIG.PERIODO_INDICADOR_S;
   if (debugMecanico) {
     pequena.rotation.y=CONFIG.FASE_PEQUENA_RAD-(esquerda.rotation.y-CONFIG.FASE_ESQUERDA_RAD)*20/12;
     grande.rotation.y=CONFIG.FASE_CONJUNTO_DOURADO_RAD-(pequena.rotation.y-CONFIG.FASE_PEQUENA_RAD)*12/16;
