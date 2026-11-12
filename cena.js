@@ -574,7 +574,9 @@ function atualizar(t) {
   } else {
     pequena.rotation.y=CONFIG.FASE_PEQUENA_RAD+2*Math.PI*t/CONFIG.PERIODO_CINZENTA_PEQUENA_S;
     grande.rotation.y=CONFIG.FASE_CONJUNTO_DOURADO_RAD-2*Math.PI*t/CONFIG.PERIODO_DOURADA_GRANDE_S;
-    direita.rotation.y=CONFIG.FASE_DIREITA_RAD+2*Math.PI*t/CONFIG.PERIODO_CINZENTA_DIREITA_S;
+    // Engrenamento 25:16: a cinzenta acompanha a dourada sem deriva angular.
+    direita.rotation.y=CONFIG.FASE_DIREITA_RAD-
+      (grande.rotation.y-CONFIG.FASE_CONJUNTO_DOURADO_RAD)*25/16;
   }
   // Conjunto composto: as duas engrenagens douradas do centro sao solidarias.
   superior.rotation.y=grande.rotation.y;
