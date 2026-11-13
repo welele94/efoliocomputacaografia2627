@@ -261,7 +261,7 @@ const grande=criarEngrenagem({
   pontoMat:null
 });
 const superior=criarEngrenagem({
-  x:-.20,z:-.18,raio:.90,dentes:16,material:MAT.ouroClaro,
+  x:-.20,z:-.18,raio:.90,dentes:16,material:MAT.ouro,
   pontoMat:MAT.verde,pontoAng:0.14,y:CONFIG.Y_ENGRENAGEM_SUPERIOR
 });
 const direita=criarEngrenagem({
