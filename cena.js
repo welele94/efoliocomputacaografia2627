@@ -78,7 +78,9 @@ const CONFIG = {
   PENUMBRA_FOCO: 1,
   LUZ_SPOT_MAX: 200.0, // foco movel mais suave: evita zonas excessivamente saturadas
   ATIVAR_FOCO_MOVEL: true,      // fase 1: unico projetor ativo
-  ATIVAR_FOCO_GERAL: true,      // fase 2: luz fixa para as sombras dos postes
+  ATIVAR_FOCO_GERAL: true,      // luz que projeta as sombras dos postes
+  ANIMAR_ORIGEM_FOCO_GERAL: true, // experiencia: mover a fonte, nao apenas o alvo
+  FIM_MOVIMENTO_FOCO_GERAL_S: 15.0, // para antes da orbita da camera
   ATIVAR_FOCO_ESFERA: false,    // ativar apenas na etapa seguinte
   LUZ_PREENCHIMENTO: 8.0, // foco fixo, suave e largo para revelar o tabuleiro
   COR_FUNDO: 0x171b22
@@ -518,8 +520,11 @@ const focoGeral = new THREE.SpotLight(
   1.0
 );
 
-// Foco obliquo frontal: hipotese A para sombras divergentes dos postes.
-focoGeral.position.set(-1.5, 3.2, 4.8);
+// Foco obliquo responsavel pelas sombras: comeca na posicao anterior.
+// Ao longo de 15 s aproxima-se de uma incidencia mais vertical sobre a mesa.
+const inicioFocoGeral = new THREE.Vector3(-1.5, 3.2, 4.8);
+const fimFocoGeral = new THREE.Vector3(0.5, 4.6, 0.7);
+focoGeral.position.copy(inicioFocoGeral);
 focoGeral.target.position.set(1.2, 0, 0.2);
 focoGeral.castShadow = true;
 focoGeral.shadow.mapSize.set(2048, 2048);
@@ -647,6 +652,15 @@ function atualizar(t) {
   // O foco repete a trajetoria a cada 6 s ate 12 s;
   // depois mantem o alvo central, mesmo durante a orbita da camera.
   foco.target.position.copy(alvoFocoPorTempo(t));
+  // A origem da luz das sombras desloca-se em tempo real ate aos 15 s.
+  // O target mantém-se sobre a mesa; a fonte termina mais acima e mais vertical.
+  // Interpolacao por tempo: comportamento identico a 30, 60 ou 144 fps.
+  const progressoFonte=Math.max(0,Math.min(1,
+    t/CONFIG.FIM_MOVIMENTO_FOCO_GERAL_S));
+  const movimentoSuave=progressoFonte*progressoFonte*(3-2*progressoFonte);
+  focoGeral.position.copy(CONFIG.ANIMAR_ORIGEM_FOCO_GERAL
+    ? inicioFocoGeral.clone().lerp(fimFocoGeral,movimentoSuave)
+    : inicioFocoGeral);
   document.getElementById('tempo').textContent=t.toFixed(2);
 }
 
