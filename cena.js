@@ -74,9 +74,9 @@ const CONFIG = {
   // extremo oposto t=1.5 e esquerda/esfera t=4.5.
   PERIODO_LUZ_S: 6.0,
   PARAGEM_LUZ_S: 12.0,
-  ABERTURA_FOCO_RAD: Math.PI / 8, // manter feixe estreito
-  PENUMBRA_FOCO: 0.55,
-  LUZ_SPOT_MAX: 52.0, // foco movel mais suave: evita zonas excessivamente saturadas
+  ABERTURA_FOCO_RAD: Math.PI / 16, // manter feixe estreito
+  PENUMBRA_FOCO: 1,
+  LUZ_SPOT_MAX: 200.0, // foco movel mais suave: evita zonas excessivamente saturadas
   LUZ_PREENCHIMENTO: 8.0, // foco fixo, suave e largo para revelar o tabuleiro
   COR_FUNDO: 0x171b22
 };
@@ -494,8 +494,8 @@ const foco=new THREE.SpotLight(
   0xfff0dc,CONFIG.LUZ_SPOT_MAX,0,
   CONFIG.ABERTURA_FOCO_RAD,CONFIG.PENUMBRA_FOCO,1.0
 );
-foco.position.set(7, 8, -4);
-foco.target.position.set(0, 0, 0);
+foco.position.set(5.8, 8.2, -3.2);
+foco.target.position.set(-1.4, 0, 0.5);
 scene.add(foco);
 scene.add(foco.target);
 foco.castShadow=true;
