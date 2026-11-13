@@ -78,7 +78,7 @@ const CONFIG = {
   PENUMBRA_FOCO: 1,
   LUZ_SPOT_MAX: 200.0, // foco movel mais suave: evita zonas excessivamente saturadas
   ATIVAR_FOCO_MOVEL: true,      // fase 1: unico projetor ativo
-  ATIVAR_FOCO_GERAL: false,     // ativar somente depois de comparar
+  ATIVAR_FOCO_GERAL: true,      // fase 2: luz fixa para as sombras dos postes
   ATIVAR_FOCO_ESFERA: false,    // ativar apenas na etapa seguinte
   LUZ_PREENCHIMENTO: 8.0, // foco fixo, suave e largo para revelar o tabuleiro
   COR_FUNDO: 0x171b22
@@ -504,23 +504,23 @@ foco.target.position.set(-1.4, 0, 0.5);
 scene.add(foco);
 scene.add(foco.target);
 foco.visible = CONFIG.ATIVAR_FOCO_MOVEL;
-foco.castShadow=true;
+foco.castShadow=false; // iluminacao movel sem sombras adicionais
 foco.shadow.mapSize.set(1024,1024);
 foco.shadow.bias=-.00015;
 
 
 const focoGeral = new THREE.SpotLight(
   0xfff3e7,   // luz de preenchimento menos amarela
-  8,         // intensidade moderada
-  0,          // sem limite de distância
-  Math.PI / 1.6, // bem mais aberto
-  0.95,       // bordas muito suaves
+  16,        // foco fixo dos postes: ponto de partida para teste
+  0,         // sem limite de distancia
+  Math.PI / 3, // abertura ampla, mas valida para SpotLight
+  0.45,      // menos penumbra para os postes nas extremidades terem sombras
   1.0
 );
 
-// Luz fixa da direita: preenchimento geral da cena.
-focoGeral.position.set(10.5, 8.8, 5.2);
-focoGeral.target.position.set(-1.2, 0.05, 0.8);
+// Foco elevado sobre a zona central: sombras divergentes dos postes.
+focoGeral.position.set(0.8, 6.0, -0.6);
+focoGeral.target.position.set(0, 0, 0);
 focoGeral.castShadow = true;
 focoGeral.shadow.mapSize.set(2048, 2048);
 focoGeral.shadow.bias = -0.00015;
