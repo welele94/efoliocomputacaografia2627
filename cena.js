@@ -504,49 +504,41 @@ foco.shadow.mapSize.set(1024,1024);
 foco.shadow.bias=-.00015;
 
 
+// Foco fixo superior: sombras principais dos postes e mecanismo.
 const focoGeral = new THREE.SpotLight(
-  0xfff3e7,   // luz de preenchimento menos amarela
-  25,         // intensidade moderada
-  0,          // sem limite de distância
-  Math.PI / 3, // cone amplo do foco fixo; dentro do limite de SpotLight
-  0.35,       // transicao suave do cone
+  0xfff3e7,
+  18,
+  0,
+  Math.PI / 3,
+  0.45,
   1.0
 );
-
-// Hipotese experimental: luz fixa acima do centro, inferida das sombras dos postes.
-// Mantem uma unica fonte principal de sombras ao longo da animacao.
-focoGeral.position.set(2, 5.5, -.6);
-focoGeral.target.position.set(0, 0, 0);
+focoGeral.position.set(1.2, 6.8, -0.8);
+focoGeral.target.position.set(1.2, 0, 0.4);
 focoGeral.castShadow = true;
 focoGeral.shadow.mapSize.set(2048, 2048);
 focoGeral.shadow.bias = -0.00015;
-focoGeral.shadow.radius = 4;
-
+focoGeral.shadow.radius = 3;
 scene.add(focoGeral);
 scene.add(focoGeral.target);
 
-// Foco fixo dedicado a esfera: vem de cima e da direita, produzindo
-// um unico realce dominante e uma sombra projetada para a esquerda.
-// Nao participa no movimento do foco que percorre o mecanismo.
-const focoEsfera = new THREE.SpotLight(
-  0xfff5e9,  // branco ligeiramente quente
-  100,        // intensidade moderada para evitar estourar a esfera
+// Foco fixo baixo/frontal esquerdo: esfera e zona esquerda do tabuleiro.
+const focoEsquerda = new THREE.SpotLight(
+  0xfff5e9,
+  10,
   0,
-  Math.PI / 7,
-  0.65,
+  Math.PI / 4,
+  0.70,
   1.0
 );
-focoEsfera.position.set(7.3, 6.0, -5.4);
-focoEsfera.target.position.copy(esfera.position);
-// A esfera recebe iluminacao dedicada sem uma segunda sombra independente.
-focoEsfera.castShadow = false;
-focoEsfera.shadow.mapSize.set(1024, 1024);
-focoEsfera.shadow.bias = -0.00015;
-focoEsfera.shadow.radius = 3;
-scene.add(focoEsfera);
-scene.add(focoEsfera.target);
-// O foco secundario quente foi removido: a luz de preenchimento
-// fica a cargo da AmbientLight fria e fraca, sem outro feixe central.
+focoEsquerda.position.set(-6.0, 2.8, 4.8);
+focoEsquerda.target.position.set(-2.6, 0, 1.8);
+focoEsquerda.castShadow = true;
+focoEsquerda.shadow.mapSize.set(1024, 1024);
+focoEsquerda.shadow.bias = -0.00015;
+focoEsquerda.shadow.radius = 3;
+scene.add(focoEsquerda);
+scene.add(focoEsquerda.target);
 
 // Alvos da luz sobre a plataforma, aproximados a partir de brilho medido.
 // Nota: coordenadas 3D dos extremos ainda nao foram inferidas das sombras.
