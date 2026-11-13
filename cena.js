@@ -353,14 +353,14 @@ braço.rotation.y = Math.PI / 1.8;
 const indicador=new THREE.Group();
 const marcaVermelha=esquerda.children.find(obj=>obj.material===MAT.vermelho);
 if (!marcaVermelha) throw new Error('Marca vermelha da engrenagem nao encontrada');
-indicador.position.set(marcaVermelha.position.x,0,marcaVermelha.position.z);
+indicador.position.set(marcaVermelha.position.x - -0.11,0,marcaVermelha.position.z - 0);
 esquerda.add(indicador);
 // Secao branca longa (a esquerda da uniao com o pino).
 caixa(.30,.025,.215,MAT.branco,-.15,.325,0,indicador);
 // Secao vermelho-coral com comprimento proximo ao da secao branca.
 caixa(.30,.025,.22,MAT.vermelhoPeca,.15,.325,0,indicador);
 // Pino preto fino, por baixo da uniao das duas cores, ate a marca vermelha.
-cilindro(.04,.22,MAT.preto,0,.205,0,indicador);
+cilindro(.03,.22,MAT.preto,0,.205,0,indicador);
 
 // Esfera branca frontal.
 const esfera=mesh(new THREE.SphereGeometry(.70,32,22),MAT.esfera);
