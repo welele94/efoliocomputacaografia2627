@@ -511,16 +511,16 @@ foco.shadow.bias=-.00015;
 
 const focoGeral = new THREE.SpotLight(
   0xfff3e7,   // luz de preenchimento menos amarela
-  16,        // foco fixo dos postes: ponto de partida para teste
+  8,         // intensidade moderada, para nao clarear demasiado a cena
   0,         // sem limite de distancia
-  Math.PI / 3, // abertura ampla, mas valida para SpotLight
-  0.45,      // menos penumbra para os postes nas extremidades terem sombras
+  Math.PI / 2.6, // cone aberto o suficiente para chegar aos tres postes
+  0.15,      // borda com transicao moderada e sombras mais visiveis
   1.0
 );
 
-// Foco elevado sobre a zona central: sombras divergentes dos postes.
-focoGeral.position.set(0.8, 6.0, -0.6);
-focoGeral.target.position.set(0, 0, 0);
+// Foco obliquo frontal: hipotese A para sombras divergentes dos postes.
+focoGeral.position.set(-1.5, 3.2, 4.8);
+focoGeral.target.position.set(1.2, 0, 0.2);
 focoGeral.castShadow = true;
 focoGeral.shadow.mapSize.set(2048, 2048);
 focoGeral.shadow.bias = -0.00015;
