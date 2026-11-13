@@ -5,41 +5,68 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>E-Fólio A — Computação Gráfica | Protótipo V1</title>
   <!--
-  E-FOLIO A — NOTAS DE MEDICAO, OBSERVACAO E LIMITACOES
+  E-FOLIO A - COMPUTACAO GRAFICA
 
-  Referencia:
-  - Video fornecido: 1280 x 720, 30 fps e duracao de 30 segundos.
-  - Analise visual de fotogramas do video, comparando o posicionamento
-    dos componentes, as marcas coloridas e os movimentos ao longo do tempo.
+  1. MEDICOES
+  - Video: 1280x720, 30 fps, 30 s; informacao da referencia; certeza alta.
+  - Engrenagem esquerda/vermelha: ~21 dentes por contagem visual em imagem;
+    modelo com 20 dentes; certeza media.
+  - Cinzenta pequena/azul: 12 dentes por contagem visual; certeza alta.
+  - Dourada central grande: ~25 dentes, contagem parcial por sobreposicao;
+    certeza media.
+  - Dourada central superior/verde: 16 dentes por contagem visual; alta.
+  - Cinzenta direita/rosa: ~16 dentes por contagem parcial; media.
+  - Disco de Genebra: 4 ranhuras por contagem visual; alta; avancos
+    aproximados de 90 graus por divisao de 360 graus em 4 partes; media.
+  - Primeiro acionamento: entre 2 e 3 s por observacao de fotogramas;
+    media; parametro adotado 2.400 s.
+  - Duracao do avanco: estimativa visual inicial ~0.54-0.55 s por fotogramas;
+    baixa; corrigida para 0.977 s no modelo por tentativa/comparacao.
+  - Periodos: ~10 s vermelho, ~6 s azul, ~8 s dourado e ~5 s rosa
+    (hipotese inicial); comparacao dos marcadores em varios instantes,
+    sem cronometro 3D original; certeza media-baixa.
+  - Fase inicial: orientacao dos pontos coloridos estimada por analogia
+    com ponteiros de relogio no instante 0; certeza media.
+  - Posicoes/dimensoes: distancias e proporcoes relativas inferidas do
+    fotograma inicial; coordenadas e raios 3D definidos como unidades
+    proprias do modelo, nao medidas reais; certeza media.
+  - Cores: amostras visuais #3F352A (base), #C79044 (dourado),
+    #82898A (cinzento) e #AEAFA8 (disco); iluminacao afeta a cor
+    observada; certeza media-baixa.
+  - Luz: variacoes de brilho ate ~12 s e retoma perto dos 23 s;
+    observacao temporal do video; certeza media.
+  - Sombras: postes com projecoes divergentes, observadas em fotogramas
+    ~2.70 s e ~8.07 s; sugerem luz proxima e elevada; certeza media.
+  - Camera: mudanca de enquadramento a partir de ~15 s por observacao
+    do video; certeza media; arco de 70 graus aproximado no modelo.
 
-  Estimativas utilizadas na modelacao:
-  - Engrenagem esquerda (marca vermelha): 20 dentes no modelo;
-    a contagem visual inicial da referencia sugeria cerca de 21.
-  - Engrenagem cinzenta pequena (marca azul): 12 dentes.
-  - Engrenagem dourada grande: aproximadamente 25 dentes.
-  - Engrenagem dourada superior (marca verde): 16 dentes.
-  - Engrenagem cinzenta direita (marca rosa): aproximadamente 16 dentes.
-  - Disco claro: quatro ranhuras e avancos intermitentes de cerca de 90 graus.
-  - Posicoes, raios, velocidades e fases ajustados por comparacao visual;
-    nao foram medidos diretamente no espaco tridimensional original.
+  2. O QUE FICOU POR EXPLICAR
+  - Forma fisicamente exata dos dentes: tentativas de alterar largura e
+    profundidade nao deram dentes uniformes em raios diferentes.
+  - Encaixe e relacoes exatas de todos os eixos: foram testados periodos
+    por observacao e razoes de dentes, sem simulacao mecanica completa.
+  - Movimento do pino e disco: aceleracao interpolada por tempo; a
+    articulacao real nao foi inteiramente recuperada do video.
+  - Posicao, numero e deslocacao exatos das fontes luminosas: foram
+    testadas sombras, penumbras, alturas e direcoes; ficaram aproximadas.
+  - Cores, nuvens e trajeto da camera: reproducoes procedurais e visuais,
+    nao recuperacoes dos valores originais.
+  - Divergencia entre duracao do disco inicialmente observada e parametro
+    escolhido no modelo: ajuste visual feito para melhorar o resultado.
 
-  Dificuldades e aspetos nao totalmente reproduzidos:
-  - A geometria dos dentes foi aproximada por perfis trapezoidais gerados
-    por codigo. Uma profundidade comum nao garante larguras fisicas iguais
-    em engrenagens com diferentes raios e numeros de dentes.
-  - Embora a aparencia e o movimento geral se aproximem do video,
-    nao foi possivel confirmar o perfil exato de todos os dentes nem
-    garantir encaixe mecanico perfeito em todos os instantes.
-  - A sincronizacao de duas engrenagens foi melhorada pela relacao 25:16;
-    os restantes periodos de rotacao continuam a ser aproximacoes visuais.
-  - A iluminacao, as sombras, a textura procedural do painel e a orbita
-    da camara foram ajustadas por observacao, nao por dados originais da cena.
-
-  Decisao de modelacao:
-  - Preservou-se o perfil trapezoidal inicial dos dentes para manter
-    a aparencia global e evitar alteracoes extensas ao mecanismo.
-  - Estas diferencas sao assumidas como limitacoes da reconstrucao,
-    e nao como uma correspondencia geometrica exata ao original.
+  3. FERRAMENTAS
+  - Reprodutor de video e pausa/fotogramas: observacao de marcadores,
+    dentes, instantes, sombras e enquadramentos.
+  - VS Code/Codespaces, JavaScript e Three.js r160 local: implementacao,
+    previsualizacao e verificacoes na consola.
+  - Git/GitHub: commits e copias de seguranca para comparar versoes.
+  - ChatGPT: apoio na estrutura da cena, formulas temporais, depuracao e
+    organizacao das observacoes; verificacao por comparacao de capturas,
+    video e codigo executado.
+  - Claude: segunda analise sobre direcoes das sombras, confrontada com
+    observacoes do video; nao considerada uma medicao exata.
+  - Validacao visual por instantes selecionados (0, 2.70, 8.07, 15,
+    23 e 30 s); alguns detalhes mantem-se aproximados.
   -->
   <style>
     html,body { margin:0; width:100%; height:100%; overflow:hidden; background:#111318; }
