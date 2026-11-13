@@ -93,7 +93,7 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 document.body.insertBefore(renderer.domElement, document.getElementById('info'));
 
 const MAT = {
-  tabuleiro: new THREE.MeshStandardMaterial({color:0x46382d, roughness:0.84}),
+  tabuleiro: new THREE.MeshStandardMaterial({color:0x3f352a, roughness:0.84}),
   ouro: new THREE.MeshStandardMaterial({color:0xc79044, metalness:0.63, roughness:0.34}),
   ouroClaro: new THREE.MeshStandardMaterial({color:0xfff0ad, metalness:0.30, roughness:0.48}),
   prata: new THREE.MeshStandardMaterial({color:0xb9bebd, metalness:0.20, roughness:0.60}),
