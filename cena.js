@@ -504,41 +504,41 @@ foco.shadow.mapSize.set(1024,1024);
 foco.shadow.bias=-.00015;
 
 
-// Foco fixo superior: sombras principais dos postes e mecanismo.
+// Foco geral fixo: versao anterior a experiencia dos dois focos.
 const focoGeral = new THREE.SpotLight(
   0xfff3e7,
-  18,
+  25,
   0,
   Math.PI / 3,
-  0.45,
+  0.35,
   1.0
 );
-focoGeral.position.set(1.2, 6.8, -0.8);
-focoGeral.target.position.set(1.2, 0, 0.4);
+focoGeral.position.set(2, 5.5, -0.6);
+focoGeral.target.position.set(0, 0, 0);
 focoGeral.castShadow = true;
 focoGeral.shadow.mapSize.set(2048, 2048);
 focoGeral.shadow.bias = -0.00015;
-focoGeral.shadow.radius = 3;
+focoGeral.shadow.radius = 4;
 scene.add(focoGeral);
 scene.add(focoGeral.target);
 
-// Foco fixo baixo/frontal esquerdo: esfera e zona esquerda do tabuleiro.
-const focoEsquerda = new THREE.SpotLight(
+// Foco dedicado a esfera: devolve a modelacao original do brilho da bola.
+const focoEsfera = new THREE.SpotLight(
   0xfff5e9,
-  10,
+  100,
   0,
-  Math.PI / 4,
-  0.70,
+  Math.PI / 7,
+  0.65,
   1.0
 );
-focoEsquerda.position.set(-6.0, 2.8, 4.8);
-focoEsquerda.target.position.set(-2.6, 0, 1.8);
-focoEsquerda.castShadow = true;
-focoEsquerda.shadow.mapSize.set(1024, 1024);
-focoEsquerda.shadow.bias = -0.00015;
-focoEsquerda.shadow.radius = 3;
-scene.add(focoEsquerda);
-scene.add(focoEsquerda.target);
+focoEsfera.position.set(7.3, 6.0, -5.4);
+focoEsfera.target.position.copy(esfera.position);
+focoEsfera.castShadow = false;
+focoEsfera.shadow.mapSize.set(1024, 1024);
+focoEsfera.shadow.bias = -0.00015;
+focoEsfera.shadow.radius = 3;
+scene.add(focoEsfera);
+scene.add(focoEsfera.target);
 
 // Alvos da luz sobre a plataforma, aproximados a partir de brilho medido.
 // Nota: coordenadas 3D dos extremos ainda nao foram inferidas das sombras.
