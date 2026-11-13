@@ -77,6 +77,9 @@ const CONFIG = {
   ABERTURA_FOCO_RAD: Math.PI / 16, // manter feixe estreito
   PENUMBRA_FOCO: 1,
   LUZ_SPOT_MAX: 200.0, // foco movel mais suave: evita zonas excessivamente saturadas
+  ATIVAR_FOCO_MOVEL: true,      // fase 1: unico projetor ativo
+  ATIVAR_FOCO_GERAL: false,     // ativar somente depois de comparar
+  ATIVAR_FOCO_ESFERA: false,    // ativar apenas na etapa seguinte
   LUZ_PREENCHIMENTO: 8.0, // foco fixo, suave e largo para revelar o tabuleiro
   COR_FUNDO: 0x171b22
 };
@@ -478,9 +481,11 @@ faixa.position.set(0,-.78,.072);
 // BETA 3: luz principal neutra, movel; preenchimento ambiente fraco e frio.
 // Luminosidade do solo de fundo quase constante na referencia.
 // Preenchimento mais uniforme: clareia as zonas fora dos focos sem criar sombras.
+// Iluminacao de referencia: configuracao restaurada do commit 4e8ff88.
+// Nesta primeira fase so o projetor movel esta ativo.
 const ambiente=new THREE.AmbientLight(0xe8edf2,.52);
 scene.add(ambiente);
-const sol=new THREE.DirectionalLight(0xfff7ed,.08);
+const sol=new THREE.DirectionalLight(0xfff7ed,.48);
 sol.position.set(-3,10,5);
 sol.castShadow=false;
 sol.shadow.mapSize.set(2048,2048);
@@ -498,34 +503,39 @@ foco.position.set(5.8, 8.2, -3.2);
 foco.target.position.set(-1.4, 0, 0.5);
 scene.add(foco);
 scene.add(foco.target);
-// As variacoes de brilho sao animadas; as sombras principais ficam a cargo do foco fixo.
-foco.castShadow=false;
+foco.visible = CONFIG.ATIVAR_FOCO_MOVEL;
+foco.castShadow=true;
 foco.shadow.mapSize.set(1024,1024);
 foco.shadow.bias=-.00015;
 
 
-// Foco fixo suave: configuracao equilibrada anterior as experiencias com sombras adicionais.
 const focoGeral = new THREE.SpotLight(
-  0xfff3e7,
-  8,
-  0,
-  Math.PI / 3,
-  0.85,
+  0xfff3e7,   // luz de preenchimento menos amarela
+  8,         // intensidade moderada
+  0,          // sem limite de distância
+  Math.PI / 1.6, // bem mais aberto
+  0.95,       // bordas muito suaves
   1.0
 );
-focoGeral.position.set(0, 5.5, -0.6);
-focoGeral.target.position.set(0, 0, 0);
+
+// Luz fixa da direita: preenchimento geral da cena.
+focoGeral.position.set(10.5, 8.8, 5.2);
+focoGeral.target.position.set(-1.2, 0.05, 0.8);
 focoGeral.castShadow = true;
 focoGeral.shadow.mapSize.set(2048, 2048);
 focoGeral.shadow.bias = -0.00015;
 focoGeral.shadow.radius = 4;
+
 scene.add(focoGeral);
 scene.add(focoGeral.target);
+focoGeral.visible = CONFIG.ATIVAR_FOCO_GERAL;
 
-// Foco dedicado a esfera: devolve a modelacao original do brilho da bola.
+// Foco fixo dedicado a esfera: vem de cima e da direita, produzindo
+// um unico realce dominante e uma sombra projetada para a esquerda.
+// Nao participa no movimento do foco que percorre o mecanismo.
 const focoEsfera = new THREE.SpotLight(
-  0xfff5e9,
-  100,
+  0xfff5e9,  // branco ligeiramente quente
+  100,        // intensidade moderada para evitar estourar a esfera
   0,
   Math.PI / 7,
   0.65,
@@ -533,12 +543,15 @@ const focoEsfera = new THREE.SpotLight(
 );
 focoEsfera.position.set(7.3, 6.0, -5.4);
 focoEsfera.target.position.copy(esfera.position);
-focoEsfera.castShadow = false;
+focoEsfera.castShadow = true;
 focoEsfera.shadow.mapSize.set(1024, 1024);
 focoEsfera.shadow.bias = -0.00015;
 focoEsfera.shadow.radius = 3;
 scene.add(focoEsfera);
 scene.add(focoEsfera.target);
+focoEsfera.visible = CONFIG.ATIVAR_FOCO_ESFERA;
+// O foco secundario quente foi removido: a luz de preenchimento
+// fica a cargo da AmbientLight fria e fraca, sem outro feixe central.
 
 // Alvos da luz sobre a plataforma, aproximados a partir de brilho medido.
 // Nota: coordenadas 3D dos extremos ainda nao foram inferidas das sombras.
