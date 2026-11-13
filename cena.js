@@ -1,39 +1,75 @@
 /*
-E-FÓLIO A — COMPUTAÇÃO GRÁFICA — PROTÓTIPO V1
-
-MEDIÇÕES E OBSERVAÇÕES
-- Vídeo original: 1280x720, 30 fps, 30 s (enunciado; confiança alta).
-- Engrenagem dourada esquerda: 21 dentes (contagem do aluno; alta).
-- Engrenagem cinzenta pequena: 12 dentes (contagem do aluno; alta).
-- Engrenagem dourada grande: ~25 dentes (estimativa do aluno; média).
-- Engrenagem dourada sobreposta: 16 dentes (contagem do aluno; alta).
-- Engrenagem cinzenta direita: ~16 dentes (estimativa do aluno; média).
-- Disco claro: quatro ranhuras (observação do aluno; alta).
-- Disco claro: 1,5 voltas / 30 s (observação do aluno; média).
-- Disco claro: acionamentos intermitentes de ~90 graus (inferido das 4 ranhuras).
-- Primeiro acionamento do disco: entre 2 e 3 s (observação do aluno).
-- Duração de um acionamento: 540 a 550 ms (estimativa do aluno).
-- Período da engrenagem do ponto rosa: ~5 s (análise preliminar).
-- Fases Beta 2: comparacao do aluno em t=0 — projeto vermelho/azul/verde
-  em 3h, rosa em 7h, laranja em 4h; referencia professor vermelho 3h,
-  azul 6h, verde 5h, rosa 11h, laranja 3h. Conversao angular provisoria.
-- Períodos das engrenagens vermelha/azul/verde: ~10/6/8 s (hipóteses
-  preliminares; precisam de validação fotograma a fotograma).
-- Dimensões, eixos, materiais, iluminação e movimento de câmara deste
-  protótipo são aproximações visuais sem medição geométrica definitiva.
+E-FOLIO A - COMPUTACAO GRAFICA
+MEDICOES (referencia = video de 30 s, 1280x720 e 30 fps; os valores do modelo
+nao sao dimensoes reais recuperadas da cena original):
+- Duracao e cadencia: 30 s, 30 fps, 1280x720; dados do video; seguranca alta.
+- Engrenagem esquerda (marca vermelha): cerca de 21 dentes na referencia;
+  contagem visual no fotograma inicial, modelo com 20; seguranca media.
+- Engrenagem cinzenta pequena (azul): 12 dentes; contagem visual; alta.
+- Engrenagem dourada central grande: cerca de 25 dentes; contagem visual
+  parcial por sobreposicao; media.
+- Engrenagem dourada superior (verde): 16 dentes; contagem visual; alta.
+- Engrenagem cinzenta direita (rosa): cerca de 16 dentes; contagem visual;
+  media, porque nem todos os dentes ficam visiveis simultaneamente.
+- Disco de Genebra: 4 ranhuras e avancos de cerca de 90 graus; observacao
+  dos fotogramas e divisao de 360 graus por 4; alta para as ranhuras,
+  media para a amplitute exata do movimento.
+- Primeiro avanco do disco: entre 2 e 3 s; procura fotograma a fotograma;
+  media; escolhido 2.4 s para a reconstrucao.
+- Duracao de avanco: estimativa inicial 0.54-0.55 s por contagem de frames;
+  seguranca baixa; no modelo foi afinada para 0.977 s por comparacao visual.
+- Engrenagem vermelha: periodo provisorio de 10 s; posicao do ponto em
+  instantes distintos do video; seguranca media-baixa.
+- Engrenagem azul: periodo provisorio de 6 s; comparacao das marcas coloridas
+  em diferentes instantes; seguranca media-baixa.
+- Conjunto dourado central: periodo aproximado de 8 s; comparacao de
+  orientacao e engrenamento; seguranca media-baixa.
+- Engrenagem rosa: periodo inicial estimado em cerca de 5 s, substituido
+  por relacao angular 25:16 com a dourada grande; seguranca media.
+- Posicoes iniciais dos pontos: aproximadas usando orientacao de ponteiros
+  de relogio no primeiro fotograma; a perspetiva reduz a precisao; media.
+- Posicoes e raios de engrenagens, disco, esfera, postes e painel:
+  proporcoes e distancias aparentes no fotograma inicial, por comparacao
+  visual; coordenadas XYZ adotadas apenas como unidades do modelo; media.
+- Cores: amostras/estimativas visuais em fotogramas, afinadas com a luz;
+  plataforma #3F352A, dourado #C79044, cinza #82898A e disco #AEAFA8;
+  seguranca media-baixa, pois sombras e focos mudam a cor aparente.
+- Foco movel: percurso aparente repetido nos primeiros 12 s e nova deslocacao
+  a partir de cerca de 23 s; observacao visual da iluminacao; media.
+- Sombras dos postes: direcoes diferentes no plano do chao; comparacao
+  visual em t=2.70 e 8.07 s; indica foco proximo/alto, sem coordenadas
+  recuperaveis com exatidao; seguranca media.
+- Camera: inicio da orbita aproximadamente aos 15 s; observacao da
+  alteracao de enquadramento; media; arco de 70 graus e altura final
+  de 8.8 unidades escolhidos por aproximacao visual, nao medidos.
 
 O QUE FICOU POR EXPLICAR
-- Sincronização exata dos cinco eixos e fase angular em t=0.
-- Forma real da aceleração do disco durante a entrada do pino.
-- Geometria exata das ranhuras e ligação física ao braço.
-- Câmara, iluminação e padrão do painel ao longo dos 30 s.
-- Sobreposição visual das engrenagens não confirma acoplamento rígido.
+- Perfil exato dos dentes: tentadas diferentes larguras/profundidades;
+  largura angular igual nao implica largura fisica igual para raios distintos.
+- Sincronismo integral dos eixos: testadas velocidades observadas e razoes
+  por numeros de dentes; o encaixe mecanico perfeito nao foi garantido.
+- Geometria real do contacto do pino e movimento intermitente do disco:
+  aproximacao temporal com aceleracao/desaceleracao, sem simulacao fisica.
+- Origem e quantidade de luzes: comparadas sombras e testadas posicoes,
+  alturas, aberturas e penumbras; a configuracao do video nao e univoca.
+- Materiais, cores exatas, ruido das nuvens e percurso completo da camera:
+  reproducoes procedurais/visuais que nao permitem recuperar os originais.
+- Valores de duracao do avanco do disco divergiram entre medicao inicial e
+  ajustes no prototipo; preservados aqui para explicitar essa limitacao.
 
 FERRAMENTAS
-- Observação manual do vídeo, fotogramas, comparação de marcas coloridas.
-- Assistente de IA para estrutura Three.js e modelo de animação.
-- Validar a saída por comparação em t=0, 2, 2.5, 3, 5, 10, 15, 20, 29 s.
-- Os valores não confirmados estão centralizados no objeto CONFIG.
+- Reprodutor de video: pausa, referencia temporal e observacao de fotogramas
+  para contar dentes, seguir marcadores e comparar iluminacao.
+- VS Code / GitHub Codespaces: implementacao em JavaScript e Three.js r160;
+  debug por instantes e verificacao de erros na consola.
+- Git e GitHub: historico de commits e salvaguarda de versoes durante testes.
+- ChatGPT: apoio na estrutura Three.js, formulas temporais, organizacao
+  das hipoteses e revisao de codigo; resultados comparados visualmente com
+  o video de referencia e ajustados no projeto.
+- Claude: segunda hipotese sobre a origem das sombras, confrontada com
+  os fotogramas; nao tratada como medicao definitiva.
+- Validacao: comparacao visual em instantes de referencia, nomeadamente
+  0, 2.70, 8.07, 15, 23 e 30 s; nao se afirma equivalencia fisica exata.
 */
 'use strict';
 
@@ -69,11 +105,12 @@ const CONFIG = {
   FIM_ORBITA_CAMARA_S: 30.0,
   ARCO_CAMARA_GRAUS: 70, // arco reduzido para aproximar o enquadramento final do video
   ALTURA_FINAL_CAMARA: 8.8,
-  // BETA 3: dois ciclos de 6 s; depois o foco fica no centro.
+  // BETA 3: dois ciclos de 6 s, pausa e retoma da trajetoria aos 23 s.
   // Interpretacao da medicao de luminosidade: centro t=0/6/12,
   // extremo oposto t=1.5 e esquerda/esfera t=4.5.
   PERIODO_LUZ_S: 6.0,
-  PARAGEM_LUZ_S: 12.0,
+  PARAGEM_LUZ_S: 12.0,         // fim da primeira passagem de luz (s)
+  RETOMA_LUZ_S: 23.0,           // segunda passagem observada a partir de ~23 s
   ABERTURA_FOCO_RAD: Math.PI / 16, // manter feixe estreito
   PENUMBRA_FOCO: 1,
   LUZ_SPOT_MAX: 200.0, // foco movel mais suave: evita zonas excessivamente saturadas
@@ -564,12 +601,13 @@ const alvoFocoCentro = new THREE.Vector3(superior.position.x,0.1,superior.positi
 const alvoFocoOposto = new THREE.Vector3(2.2,0.1,-1.3);
 const alvoFocoEsquerdo = new THREE.Vector3(-4.1,0.1,2.1);
 
-// Dois ciclos identicos de 6 s (de 0 a 12). Depois, fixo ao centro.
-// Percurso em cada ciclo: centro (0) -> oposto (1.5) ->
-// esquerda (4.5) -> centro (6). Interpolacao sem saltos.
+// Percurso do feixe: 0-12 s com dois ciclos de 6 s, pausa 12-23 s,
+// retoma aos 23 s pela mesma trajetoria. O alvo e continuo na retoma.
 function alvoFocoPorTempo(t) {
-  if (t>=CONFIG.PARAGEM_LUZ_S) return alvoFocoCentro.clone();
-  const fase=((t%CONFIG.PERIODO_LUZ_S)+CONFIG.PERIODO_LUZ_S)%CONFIG.PERIODO_LUZ_S;
+  if (t>=CONFIG.PARAGEM_LUZ_S && t<CONFIG.RETOMA_LUZ_S)
+    return alvoFocoCentro.clone();
+  const tempoTrajetoria=t>=CONFIG.RETOMA_LUZ_S ? t-CONFIG.RETOMA_LUZ_S : t;
+  const fase=((tempoTrajetoria%CONFIG.PERIODO_LUZ_S)+CONFIG.PERIODO_LUZ_S)%CONFIG.PERIODO_LUZ_S;
   const marcas=[
     [0,alvoFocoCentro],
     [1.5,alvoFocoOposto],
@@ -649,17 +687,26 @@ function atualizar(t) {
   );
   camera.lookAt(centroCamara);
 
-  // O foco repete a trajetoria a cada 6 s ate 12 s;
-  // depois mantem o alvo central, mesmo durante a orbita da camera.
+  // O foco percorre a mesa ate aos 12 s, pausa e retoma aos 23 s;
+  // a retoma usa a mesma trajetoria sem depender do numero de frames.
   foco.target.position.copy(alvoFocoPorTempo(t));
   // A origem da luz das sombras desloca-se em tempo real ate aos 15 s.
   // O target mantém-se sobre a mesa; a fonte termina mais acima e mais vertical.
   // Interpolacao por tempo: comportamento identico a 30, 60 ou 144 fps.
+  // A fonte das sombras avanca ate aos 15 s, fica parada ate aos 23 s
+  // e regressa pela mesma trajetoria ate aos 30 s, sem salto de posicao.
   const progressoFonte=Math.max(0,Math.min(1,
     t/CONFIG.FIM_MOVIMENTO_FOCO_GERAL_S));
   const movimentoSuave=progressoFonte*progressoFonte*(3-2*progressoFonte);
+  let percursoFonte=movimentoSuave;
+  if (t>=CONFIG.RETOMA_LUZ_S) {
+    const progressoRegresso=Math.max(0,Math.min(1,
+      (t-CONFIG.RETOMA_LUZ_S)/(CONFIG.DURACAO_VIDEO_S-CONFIG.RETOMA_LUZ_S)));
+    const regressoSuave=progressoRegresso*progressoRegresso*(3-2*progressoRegresso);
+    percursoFonte=1-regressoSuave;
+  }
   focoGeral.position.copy(CONFIG.ANIMAR_ORIGEM_FOCO_GERAL
-    ? inicioFocoGeral.clone().lerp(fimFocoGeral,movimentoSuave)
+    ? inicioFocoGeral.clone().lerp(fimFocoGeral,percursoFonte)
     : inicioFocoGeral);
   document.getElementById('tempo').textContent=t.toFixed(2);
 }
