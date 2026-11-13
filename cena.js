@@ -76,7 +76,7 @@ const CONFIG = {
   PARAGEM_LUZ_S: 12.0,
   ABERTURA_FOCO_RAD: Math.PI / 8, // manter feixe estreito
   PENUMBRA_FOCO: 0.55,
-  LUZ_SPOT_MAX: 70.55, // intensidade ajustada pelo aluno: preservada
+  LUZ_SPOT_MAX: 52.0, // foco movel mais suave: evita zonas excessivamente saturadas
   LUZ_PREENCHIMENTO: 8.0, // foco fixo, suave e largo para revelar o tabuleiro
   COR_FUNDO: 0x171b22
 };
@@ -95,9 +95,9 @@ document.body.insertBefore(renderer.domElement, document.getElementById('info'))
 const MAT = {
   tabuleiro: new THREE.MeshStandardMaterial({color:0x46382d, roughness:0.84}),
   ouro: new THREE.MeshStandardMaterial({color:0xc9913e, metalness:0.63, roughness:0.34}),
-  ouroClaro: new THREE.MeshStandardMaterial({color:0xffe98e, metalness:0.48, roughness:0.33}),
-  prata: new THREE.MeshStandardMaterial({color:0xb9c1c5, metalness:0.40, roughness:0.43}),
-  cinza: new THREE.MeshStandardMaterial({color:0x6d7a81, metalness:0.34, roughness:0.48}),
+  ouroClaro: new THREE.MeshStandardMaterial({color:0xfff0ad, metalness:0.30, roughness:0.48}),
+  prata: new THREE.MeshStandardMaterial({color:0xb9bebd, metalness:0.20, roughness:0.60}),
+  cinza: new THREE.MeshStandardMaterial({color:0x899293, metalness:0.20, roughness:0.58}),
   disco: new THREE.MeshStandardMaterial({color:0xdddddb, metalness:0.27, roughness:0.48}),
   preto: new THREE.MeshStandardMaterial({color:0x161b1c, roughness:0.8}),
   poste: new THREE.MeshStandardMaterial({color:0xb6a17b, roughness:0.71}),
@@ -477,9 +477,10 @@ faixa.position.set(0,-.78,.072);
 
 // BETA 3: luz principal neutra, movel; preenchimento ambiente fraco e frio.
 // Luminosidade do solo de fundo quase constante na referencia.
-const ambiente=new THREE.AmbientLight(0xc8d8f5,.35);
+// Preenchimento mais uniforme: clareia as zonas fora dos focos sem criar sombras.
+const ambiente=new THREE.AmbientLight(0xe8edf2,.52);
 scene.add(ambiente);
-const sol=new THREE.DirectionalLight(0xfff2e1,.35);
+const sol=new THREE.DirectionalLight(0xfff7ed,.48);
 sol.position.set(-3,10,5);
 sol.castShadow=false;
 sol.shadow.mapSize.set(2048,2048);
@@ -490,7 +491,7 @@ scene.add(sol);
 
 // Luz principal: cor neutra; intensidade e posicao da fonte fixas.
 const foco=new THREE.SpotLight(
-  0xffe2ad,CONFIG.LUZ_SPOT_MAX,0,
+  0xfff0dc,CONFIG.LUZ_SPOT_MAX,0,
   CONFIG.ABERTURA_FOCO_RAD,CONFIG.PENUMBRA_FOCO,1.0
 );
 foco.position.set(7, 8, -4);
@@ -503,8 +504,8 @@ foco.shadow.bias=-.00015;
 
 
 const focoGeral = new THREE.SpotLight(
-  0xffe2ad,   // neutro
-  6,         // intensidade moderada
+  0xfff3e7,   // luz de preenchimento menos amarela
+  8,         // intensidade moderada
   0,          // sem limite de distância
   Math.PI / 1.6, // bem mais aberto
   0.95,       // bordas muito suaves
