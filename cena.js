@@ -244,14 +244,14 @@ function criarEngrenagem({
 }
 // Posicoes iniciais e dimensoes sao aproximacoes para primeira comparacao.
 const esquerda=criarEngrenagem({
-  x:-3.8,z:0.1,raio:1.3,dentes:20,material:MAT.ouro,
+  x:-3.7,z:0.09,raio:1.2,dentes:20,material:MAT.ouro,
   y:CONFIG.Y_ENGRENAGEM_INFERIOR + CONFIG.ALTURA_ENGRENAGEM/2,
   espessura:CONFIG.ESPESSURA_ESQUERDA,
   pontoMat:MAT.vermelho,pontoAng:-.1,
   espessura: .15
 });
 const pequena=criarEngrenagem({
-  x:-1.9,z:-1.3,raio:.75,dentes:12,material:MAT.prata,
+  x:-1.85,z:-1.25,raio:.70,dentes:12,material:MAT.prata,
   y:CONFIG.Y_ENGRENAGEM_SUPERIOR,
   pontoMat:MAT.azul,pontoAng:.0, espessura: .15
 });
@@ -356,11 +356,9 @@ if (!marcaVermelha) throw new Error('Marca vermelha da engrenagem nao encontrada
 indicador.position.set(marcaVermelha.position.x,0,marcaVermelha.position.z);
 esquerda.add(indicador);
 // Secao branca longa (a esquerda da uniao com o pino).
-caixa(.61,.065,.215,MAT.branco,-.30,.325,0,indicador);
-// Base dourada, parcialmente visivel por baixo da secao vermelha e na ponta.
-caixa(.51,.065,.22,MAT.ouro,.28,.295,0,indicador);
+caixa(.30,.025,.215,MAT.branco,-.15,.325,0,indicador);
 // Secao vermelho-coral com comprimento proximo ao da secao branca.
-caixa(.47,.075,.22,MAT.vermelhoPeca,.23,.345,0,indicador);
+caixa(.30,.025,.22,MAT.vermelhoPeca,.15,.325,0,indicador);
 // Pino preto fino, por baixo da uniao das duas cores, ate a marca vermelha.
 cilindro(.04,.22,MAT.preto,0,.205,0,indicador);
 
