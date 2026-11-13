@@ -67,7 +67,7 @@ const CONFIG = {
   // BETA 3 - camera: enquadramento fixo ate ~15 s, depois orbita progressiva.
   INICIO_ORBITA_CAMARA_S: 15.0,
   FIM_ORBITA_CAMARA_S: 30.0,
-  ARCO_CAMARA_GRAUS: 105, // aproximacao visual, por confirmar com frames
+  ARCO_CAMARA_GRAUS: 70, // arco reduzido para aproximar o enquadramento final do video
   ALTURA_FINAL_CAMARA: 8.8,
   // BETA 3: dois ciclos de 6 s; depois o foco fica no centro.
   // Interpretacao da medicao de luminosidade: centro t=0/6/12,
@@ -477,9 +477,9 @@ faixa.position.set(0,-.78,.072);
 
 // BETA 3: luz principal neutra, movel; preenchimento ambiente fraco e frio.
 // Luminosidade do solo de fundo quase constante na referencia.
-const ambiente=new THREE.AmbientLight(0xc8d8f5,.18);
+const ambiente=new THREE.AmbientLight(0xc8d8f5,.35);
 scene.add(ambiente);
-const sol=new THREE.DirectionalLight(0xfff2e1,.15);
+const sol=new THREE.DirectionalLight(0xfff2e1,.35);
 sol.position.set(-3,10,5);
 sol.castShadow=false;
 sol.shadow.mapSize.set(2048,2048);
