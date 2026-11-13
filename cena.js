@@ -504,16 +504,16 @@ foco.shadow.mapSize.set(1024,1024);
 foco.shadow.bias=-.00015;
 
 
-// Foco geral fixo: versao anterior a experiencia dos dois focos.
+// Foco fixo suave: configuracao equilibrada anterior as experiencias com sombras adicionais.
 const focoGeral = new THREE.SpotLight(
   0xfff3e7,
-  25,
+  8,
   0,
   Math.PI / 3,
-  0.35,
+  0.85,
   1.0
 );
-focoGeral.position.set(2, 5.5, -0.6);
+focoGeral.position.set(0, 5.5, -0.6);
 focoGeral.target.position.set(0, 0, 0);
 focoGeral.castShadow = true;
 focoGeral.shadow.mapSize.set(2048, 2048);
