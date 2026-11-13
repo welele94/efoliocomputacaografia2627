@@ -480,7 +480,7 @@ faixa.position.set(0,-.78,.072);
 // Preenchimento mais uniforme: clareia as zonas fora dos focos sem criar sombras.
 const ambiente=new THREE.AmbientLight(0xe8edf2,.52);
 scene.add(ambiente);
-const sol=new THREE.DirectionalLight(0xfff7ed,.48);
+const sol=new THREE.DirectionalLight(0xfff7ed,.08);
 sol.position.set(-3,10,5);
 sol.castShadow=false;
 sol.shadow.mapSize.set(2048,2048);
@@ -506,16 +506,16 @@ foco.shadow.bias=-.00015;
 
 const focoGeral = new THREE.SpotLight(
   0xfff3e7,   // luz de preenchimento menos amarela
-  8,         // intensidade moderada
+  25,         // intensidade moderada
   0,          // sem limite de distância
   Math.PI / 3, // cone amplo do foco fixo; dentro do limite de SpotLight
-  0.85,       // transicao suave do cone
+  0.35,       // transicao suave do cone
   1.0
 );
 
 // Hipotese experimental: luz fixa acima do centro, inferida das sombras dos postes.
 // Mantem uma unica fonte principal de sombras ao longo da animacao.
-focoGeral.position.set(0, 5.5, -0.6);
+focoGeral.position.set(2, 5.5, -.6);
 focoGeral.target.position.set(0, 0, 0);
 focoGeral.castShadow = true;
 focoGeral.shadow.mapSize.set(2048, 2048);
