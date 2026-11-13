@@ -498,7 +498,8 @@ foco.position.set(5.8, 8.2, -3.2);
 foco.target.position.set(-1.4, 0, 0.5);
 scene.add(foco);
 scene.add(foco.target);
-foco.castShadow=true;
+// As variacoes de brilho sao animadas; as sombras principais ficam a cargo do foco fixo.
+foco.castShadow=false;
 foco.shadow.mapSize.set(1024,1024);
 foco.shadow.bias=-.00015;
 
@@ -507,14 +508,15 @@ const focoGeral = new THREE.SpotLight(
   0xfff3e7,   // luz de preenchimento menos amarela
   8,         // intensidade moderada
   0,          // sem limite de distância
-  Math.PI / 1.6, // bem mais aberto
-  0.95,       // bordas muito suaves
+  Math.PI / 3, // cone amplo do foco fixo; dentro do limite de SpotLight
+  0.85,       // transicao suave do cone
   1.0
 );
 
-// Luz fixa da direita: preenchimento geral da cena.
-focoGeral.position.set(10.5, 8.8, 5.2);
-focoGeral.target.position.set(-1.2, 0.05, 0.8);
+// Hipotese experimental: luz fixa acima do centro, inferida das sombras dos postes.
+// Mantem uma unica fonte principal de sombras ao longo da animacao.
+focoGeral.position.set(0, 5.5, -0.6);
+focoGeral.target.position.set(0, 0, 0);
 focoGeral.castShadow = true;
 focoGeral.shadow.mapSize.set(2048, 2048);
 focoGeral.shadow.bias = -0.00015;
@@ -536,7 +538,8 @@ const focoEsfera = new THREE.SpotLight(
 );
 focoEsfera.position.set(7.3, 6.0, -5.4);
 focoEsfera.target.position.copy(esfera.position);
-focoEsfera.castShadow = true;
+// A esfera recebe iluminacao dedicada sem uma segunda sombra independente.
+focoEsfera.castShadow = false;
 focoEsfera.shadow.mapSize.set(1024, 1024);
 focoEsfera.shadow.bias = -0.00015;
 focoEsfera.shadow.radius = 3;
