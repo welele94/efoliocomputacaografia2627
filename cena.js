@@ -94,11 +94,11 @@ document.body.insertBefore(renderer.domElement, document.getElementById('info'))
 
 const MAT = {
   tabuleiro: new THREE.MeshStandardMaterial({color:0x46382d, roughness:0.84}),
-  ouro: new THREE.MeshStandardMaterial({color:0xc9913e, metalness:0.63, roughness:0.34}),
+  ouro: new THREE.MeshStandardMaterial({color:0xc79044, metalness:0.63, roughness:0.34}),
   ouroClaro: new THREE.MeshStandardMaterial({color:0xfff0ad, metalness:0.30, roughness:0.48}),
   prata: new THREE.MeshStandardMaterial({color:0xb9bebd, metalness:0.20, roughness:0.60}),
-  cinza: new THREE.MeshStandardMaterial({color:0x899293, metalness:0.20, roughness:0.58}),
-  disco: new THREE.MeshStandardMaterial({color:0xdddddb, metalness:0.27, roughness:0.48}),
+  cinza: new THREE.MeshStandardMaterial({color:0x82898a, metalness:0.20, roughness:0.58}),
+  disco: new THREE.MeshStandardMaterial({color:0xaeafa8, metalness:0.27, roughness:0.48}),
   preto: new THREE.MeshStandardMaterial({color:0x161b1c, roughness:0.8}),
   poste: new THREE.MeshStandardMaterial({color:0xb6a17b, roughness:0.71}),
   vermelho: new THREE.MeshStandardMaterial({color:0xff2928, emissive:0x3a0000}),
